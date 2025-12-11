@@ -67,6 +67,7 @@ public class SecurityConfig {
                 .requestMatchers("/products/**").authenticated()
                 .requestMatchers("/orders/**").authenticated()
                 .requestMatchers("/api/**").authenticated()
+                .requestMatchers("/shop/**").authenticated() 
                 
                 .anyRequest().authenticated()
             );

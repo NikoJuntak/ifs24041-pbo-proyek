@@ -23,16 +23,18 @@ public class DashboardService {
 
         // 1. Total Omzet (Hanya yang status DONE)
         BigDecimal totalRevenue = orderRepository.sumTotalAmountByStatus(OrderStatus.DONE);
-        summary.put("totalRevenue", totalRevenue);
+        summary.put("totalRevenue", totalRevenue != null ? totalRevenue : BigDecimal.ZERO);
 
         // 2. Hitung jumlah pesanan per status
-        long newOrders = orderRepository.countByStatus(OrderStatus.NEW);
-        long processingOrders = orderRepository.countByStatus(OrderStatus.PROCESSING);
-        long doneOrders = orderRepository.countByStatus(OrderStatus.DONE);
+        Long newOrders = orderRepository.countByStatus(OrderStatus.NEW);
+        Long processingOrders = orderRepository.countByStatus(OrderStatus.PROCESSING);
+        Long doneOrders = orderRepository.countByStatus(OrderStatus.DONE);
+        Long shippedOrders = orderRepository.countByStatus(OrderStatus.SHIPPED);
         
-        summary.put("countNew", newOrders);
-        summary.put("countProcessing", processingOrders);
-        summary.put("countDone", doneOrders);
+        summary.put("countNew", newOrders != null ? newOrders : 0L);
+        summary.put("countProcessing", processingOrders != null ? processingOrders : 0L);
+        summary.put("countDone", doneOrders != null ? doneOrders : 0L);
+        summary.put("countShipped", shippedOrders != null ? shippedOrders : 0L);
         summary.put("totalOrders", orderRepository.count());
 
         return summary;
@@ -44,11 +46,17 @@ public class DashboardService {
         Map<String, Object> chartData = new HashMap<>();
         
         String[] labels = {"New", "Processing", "Shipped", "Done"};
+        
+        Long newCount = orderRepository.countByStatus(OrderStatus.NEW);
+        Long processingCount = orderRepository.countByStatus(OrderStatus.PROCESSING);
+        Long shippedCount = orderRepository.countByStatus(OrderStatus.SHIPPED);
+        Long doneCount = orderRepository.countByStatus(OrderStatus.DONE);
+        
         long[] data = {
-            orderRepository.countByStatus(OrderStatus.NEW),
-            orderRepository.countByStatus(OrderStatus.PROCESSING),
-            orderRepository.countByStatus(OrderStatus.SHIPPED),
-            orderRepository.countByStatus(OrderStatus.DONE)
+            newCount != null ? newCount : 0L,
+            processingCount != null ? processingCount : 0L,
+            shippedCount != null ? shippedCount : 0L,
+            doneCount != null ? doneCount : 0L
         };
 
         chartData.put("labels", labels);

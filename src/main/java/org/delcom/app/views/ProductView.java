@@ -2,6 +2,7 @@ package org.delcom.app.views;
 
 import org.delcom.app.entities.Product;
 import org.delcom.app.entities.User;
+import org.delcom.app.entities.UserRole;
 import org.delcom.app.repositories.UserRepository;
 import org.delcom.app.services.ProductService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,64 +26,76 @@ public class ProductView {
         this.userRepository = userRepository;
     }
 
-    // 1. TAMPILKAN LIST PRODUK
+    // LIST PRODUK (Dipisah berdasarkan Role)
     @GetMapping
     public String listProducts(Model model) {
         User authUser = getAuthenticatedUser();
+        if (authUser == null) return "redirect:/auth/login";
+        
         model.addAttribute("auth", authUser);
         model.addAttribute("products", productService.getAllActiveProducts());
-        return "pages/products/list"; // Kita akan buat file ini
+
+        // ROUTING BERDASARKAN ROLE
+        if (authUser.getRole() == UserRole.ADMIN) {
+            return "pages/admin/products"; // File HTML Admin
+        } else {
+            return "pages/staff/products"; // File HTML Staff
+        }
     }
 
-    // 2. FORM TAMBAH PRODUK
     @GetMapping("/create")
     public String createProductForm(Model model) {
         model.addAttribute("auth", getAuthenticatedUser());
-        model.addAttribute("product", new Product());
+        model.addAttribute("product", new Product()); // Objek kosong
         model.addAttribute("pageTitle", "Tambah Produk Baru");
-        return "pages/products/form"; // Kita akan buat file ini
+        return "pages/products/form"; 
     }
 
-    // 3. FORM EDIT PRODUK
     @GetMapping("/edit/{id}")
     public String editProductForm(@PathVariable Long id, Model model) {
         model.addAttribute("auth", getAuthenticatedUser());
         try {
             Product product = productService.getProductById(id);
-            model.addAttribute("product", product);
-            model.addAttribute("pageTitle", "Edit Produk");
+            model.addAttribute("product", product); // Objek dari DB
+            model.addAttribute("pageTitle", "Edit Produk: " + product.getName());
             return "pages/products/form";
         } catch (Exception e) {
             return "redirect:/products";
         }
     }
 
-    // 4. SIMPAN DATA (CREATE / UPDATE)
     @PostMapping("/save")
     public String saveProduct(@ModelAttribute Product product, 
                               @RequestParam(value = "imageFile", required = false) MultipartFile imageFile) {
         try {
             if (product.getId() == null) {
-                // Mode Create
+                // LOGIC CREATE
                 productService.createProduct(product, imageFile);
             } else {
-                // Mode Update
+                // LOGIC UPDATE
                 productService.updateProduct(product.getId(), product, imageFile);
             }
         } catch (Exception e) {
-            System.out.println("Error saving product: " + e.getMessage());
+            System.err.println("Gagal menyimpan produk: " + e.getMessage());
         }
         return "redirect:/products";
     }
 
-    // 5. HAPUS PRODUK (Soft Delete) - Admin Only
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')") 
     @GetMapping("/delete/{id}")
     public String deleteProduct(@PathVariable Long id) {
-        productService.deleteProduct(id);
+        try {
+            productService.deleteProduct(id);
+        } catch (Exception e) {
+            System.err.println("Gagal menghapus produk: " + e.getMessage());
+        }
+        // Redirect kembali ke daftar produk setelah dihapus
         return "redirect:/products";
     }
 
+    // ... sisa method save, edit, delete tetap sama ...
+    
+    // ... private helper getAuthenticatedUser ...
     private User getAuthenticatedUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.getPrincipal() instanceof UserDetails) {

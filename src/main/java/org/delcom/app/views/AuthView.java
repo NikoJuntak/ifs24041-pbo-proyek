@@ -4,14 +4,16 @@ import org.delcom.app.dto.auth.RegisterRequest;
 import org.delcom.app.utils.ConstUtil;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.Collection;
+
+
 
 @Controller
 @RequestMapping("/auth")
@@ -31,38 +33,37 @@ public class AuthView {
     public String registerPage(Model model) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         
-        // 1. Jika belum login -> Boleh Register (User Baru Mandiri)
-        // 2. Jika sudah login DAN role-nya ADMIN -> Boleh Register (Nambah Staff)
-        // 3. Jika login TAPI bukan admin -> Redirect Dashboard
-        
-        boolean isLoggedIn = auth != null && 
-                           auth.isAuthenticated() && 
-                           !(auth instanceof AnonymousAuthenticationToken);
-        
-        boolean isAdmin = false;
-        
-        // Periksa role admin dengan pengecekan null yang aman
+        // Cek apakah user sedang login
+        boolean isLoggedIn = auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken);
+
         if (isLoggedIn) {
-            Collection<? extends GrantedAuthority> authorities = auth.getAuthorities();
-            if (authorities != null) {
-                isAdmin = authorities.stream()
-                    .anyMatch(a -> a.getAuthority() != null && 
-                                  a.getAuthority().equals("ROLE_ADMIN"));
+            // Jika Admin yang login, dia mungkin mau nambah staff -> Biarkan akses (opsional)
+            // Atau jika User biasa yang login, redirect ke shop agar tidak daftar ulang
+            boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            if (!isAdmin) {
+                return "redirect:/shop";
             }
         }
 
-        if (isLoggedIn && !isAdmin) {
-            return "redirect:/dashboard";
-        }
-
-        // Kirim object kosong untuk form
+        // Jika belum login (Public), tampilkan form register pelanggan
         model.addAttribute("registerRequest", new RegisterRequest());
-        
-        // Tambahkan informasi tambahan untuk template
-        model.addAttribute("isAdmin", isAdmin);
-        model.addAttribute("isLoggedIn", isLoggedIn);
-        
         return ConstUtil.TEMPLATE_AUTH_REGISTER;
+    }
+
+    @GetMapping("/logout")
+    public String logout(HttpServletResponse response) {
+        // 1. Bersihkan Security Context di Server
+        SecurityContextHolder.clearContext();
+
+        // 2. Hapus Cookie 'AUTH_TOKEN' dari sisi Server (Double protection)
+        Cookie cookie = new Cookie("AUTH_TOKEN", null);
+        cookie.setPath("/");
+        cookie.setHttpOnly(false);
+        cookie.setMaxAge(0); // Set umur cookie jadi 0 (langsung mati)
+        response.addCookie(cookie);
+
+        // 3. Redirect ke halaman login
+        return "redirect:/auth/login?logout=true";
     }
 
     private boolean isAuthenticated() {

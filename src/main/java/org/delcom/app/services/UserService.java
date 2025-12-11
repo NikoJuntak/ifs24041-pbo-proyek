@@ -55,6 +55,25 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User tidak ditemukan dengan ID: " + id));
     }
 
+    public List<User> getAllStaff() {
+        return userRepository.findByRole(UserRole.STAFF);
+    }
+
+    @Transactional
+    public void createStaff(String fullName, String username, String password) {
+        if (userRepository.existsByUsername(username)) {
+            throw new RuntimeException("Username sudah digunakan!");
+        }
+        
+        User staff = new User();
+        staff.setFullName(fullName);
+        staff.setUsername(username);
+        staff.setPassword(passwordEncoder.encode(password)); // Hash Password
+        staff.setRole(UserRole.STAFF); // Paksa Role STAFF
+        
+        userRepository.save(staff);
+    }
+
     // --- UPDATE DATA ---
     @Transactional
     public User updateUser(Long id, String newFullName, String newUsername) {

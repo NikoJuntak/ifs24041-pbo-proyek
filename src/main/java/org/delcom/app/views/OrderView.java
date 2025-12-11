@@ -1,6 +1,7 @@
 package org.delcom.app.views;
 
 import org.delcom.app.entities.User;
+import org.delcom.app.entities.UserRole;
 import org.delcom.app.repositories.UserRepository;
 import org.delcom.app.services.OrderService;
 import org.delcom.app.services.ProductService;
@@ -32,9 +33,17 @@ public class OrderView {
     @GetMapping
     public String listOrders(Model model) {
         User authUser = getAuthenticatedUser();
+        if (authUser == null) return "redirect:/auth/login";
+
         model.addAttribute("auth", authUser);
         model.addAttribute("orders", orderService.getAllOrders());
-        return "pages/orders/list";
+
+        // ROUTING BERDASARKAN ROLE
+        if (authUser.getRole() == UserRole.ADMIN) {
+            return "pages/admin/orders"; // Laporan Admin
+        } else {
+            return "pages/staff/orders"; // Workspace Staff
+        }
     }
 
     // FORM CREATE ORDER (Ini yang tadi saya tambahkan)

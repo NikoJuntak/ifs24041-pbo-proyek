@@ -1,59 +1,144 @@
 <!DOCTYPE html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title th:text="${pageTitle}">Form Produk</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
 </head>
-<body class="bg-gray-100 flex justify-center items-center h-screen">
-    <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-lg">
-        <h2 class="text-2xl font-bold mb-6 text-slate-800" th:text="${pageTitle}">Form Produk</h2>
-        
-        <form th:action="@{/products/save}" th:object="${product}" method="post" enctype="multipart/form-data" class="space-y-4">
+<body class="bg-gray-100 flex items-center justify-center min-h-screen py-10 px-4">
+
+    <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl overflow-hidden">
+        <!-- Header -->
+        <div class="bg-slate-900 px-8 py-6 flex justify-between items-center">
+            <div>
+                <h2 class="text-2xl font-bold text-white" th:text="${pageTitle}">Form Produk</h2>
+                <p class="text-slate-400 text-sm mt-1">Isi informasi produk dengan lengkap.</p>
+            </div>
+            <a href="/products" class="text-slate-400 hover:text-white transition">
+                <i class="fas fa-times text-xl"></i>
+            </a>
+        </div>
+
+        <!-- Form Content -->
+        <form th:action="@{/products/save}" th:object="${product}" method="post" enctype="multipart/form-data" class="p-8">
+            
             <input type="hidden" th:field="*{id}">
             
-            <!-- Nama -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Nama Produk</label>
-                <input type="text" th:field="*{name}" required class="w-full mt-1 p-2 border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none">
-            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <!-- KOLOM KIRI: Informasi Dasar -->
+                <div class="space-y-6">
+                    <!-- Nama Produk -->
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Nama Produk <span class="text-red-500">*</span></label>
+                        <input type="text" th:field="*{name}" required placeholder="Contoh: Laptop Gaming Asus" 
+                               class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition">
+                    </div>
 
-            <!-- Kategori & Stok -->
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Kategori</label>
-                    <input type="text" th:field="*{category}" required class="w-full mt-1 p-2 border rounded-lg">
+                    <!-- Kategori -->
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Kategori <span class="text-red-500">*</span></label>
+                        <select th:field="*{category}" class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none bg-white">
+                            <option value="Elektronik">Elektronik</option>
+                            <option value="Pakaian">Pakaian</option>
+                            <option value="Makanan">Makanan</option>
+                            <option value="Aksesoris">Aksesoris</option>
+                            <option value="Lainnya">Lainnya</option>
+                        </select>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- Harga -->
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Harga (Rp) <span class="text-red-500">*</span></label>
+                            <input type="number" th:field="*{price}" required min="0" placeholder="0"
+                                   class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                        <!-- Stok -->
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Stok Awal <span class="text-red-500">*</span></label>
+                            <input type="number" th:field="*{stock}" required min="0" placeholder="0"
+                                   class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Deskripsi -->
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Deskripsi</label>
+                        <textarea th:field="*{description}" rows="4" placeholder="Jelaskan detail produk..."
+                                  class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none resize-none"></textarea>
+                    </div>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-gray-700">Stok</label>
-                    <input type="number" th:field="*{stock}" required min="0" class="w-full mt-1 p-2 border rounded-lg">
+
+                <!-- KOLOM KANAN: Upload Gambar -->
+                <div class="flex flex-col">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Gambar Produk</label>
+                    
+                    <div class="border-2 border-dashed border-slate-300 rounded-xl p-6 flex flex-col items-center justify-center text-center hover:bg-slate-50 transition cursor-pointer relative h-full bg-slate-50" onclick="document.getElementById('imageInput').click()">
+                        
+                        <!-- Preview Image Container -->
+                        <div id="previewContainer" class="mb-4">
+                            <!-- Jika Edit dan sudah ada gambar -->
+                            <img th:if="${product.image != null}" th:src="@{'/uploads/' + ${product.image}}" id="previewImage" class="max-h-48 rounded-lg shadow-md object-cover">
+                            <!-- Jika Tambah Baru / Belum ada gambar -->
+                            <img th:unless="${product.image != null}" id="previewImage" class="max-h-48 rounded-lg shadow-md hidden">
+                            
+                            <!-- Icon Default -->
+                            <div id="uploadIcon" th:class="${product.image != null} ? 'hidden' : ''">
+                                <div class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                                    <i class="fas fa-cloud-upload-alt text-2xl"></i>
+                                </div>
+                                <p class="text-sm text-slate-500 font-medium">Klik untuk upload gambar</p>
+                                <p class="text-xs text-slate-400 mt-1">PNG, JPG, JPEG (Max 2MB)</p>
+                            </div>
+                        </div>
+
+                        <!-- Input File Hidden -->
+                        <input type="file" name="imageFile" id="imageInput" accept="image/*" class="hidden" onchange="previewFile(this)">
+                    </div>
+                    
+                    <p class="text-xs text-slate-400 mt-2 text-center">*Biarkan kosong jika tidak ingin mengubah gambar saat edit.</p>
                 </div>
             </div>
 
-            <!-- Harga -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Harga (Rp)</label>
-                <input type="number" th:field="*{price}" required min="0" class="w-full mt-1 p-2 border rounded-lg">
-            </div>
-
-            <!-- Deskripsi -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Deskripsi</label>
-                <textarea th:field="*{description}" rows="3" class="w-full mt-1 p-2 border rounded-lg"></textarea>
-            </div>
-
-            <!-- Upload Gambar -->
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Gambar Produk</label>
-                <input type="file" name="imageFile" accept="image/*" class="w-full mt-1 text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-                <p class="text-xs text-gray-400 mt-1">*Biarkan kosong jika tidak ingin mengubah gambar.</p>
-            </div>
-
-            <!-- Tombol -->
-            <div class="flex justify-end gap-3 mt-6">
-                <a href="/products" class="px-4 py-2 text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300">Batal</a>
-                <button type="submit" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-bold">Simpan Produk</button>
+            <!-- Footer Buttons -->
+            <div class="mt-8 pt-6 border-t border-slate-200 flex justify-end gap-4">
+                <a href="/products" class="px-6 py-2.5 rounded-lg border border-slate-300 text-slate-600 font-bold hover:bg-slate-100 transition">Batal</a>
+                <button type="submit" class="px-6 py-2.5 rounded-lg bg-indigo-600 text-white font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition transform hover:-translate-y-0.5">
+                    <i class="fas fa-save mr-2"></i> Simpan Produk
+                </button>
             </div>
         </form>
     </div>
+
+    <!-- Script Preview Gambar -->
+    <script>
+        function previewFile(input) {
+            const file = input.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('previewImage');
+                    const icon = document.getElementById('uploadIcon');
+                    
+                    img.src = e.target.result;
+                    img.classList.remove('hidden');
+                    img.style.display = 'block'; // Force display
+                    
+                    if(icon) icon.style.display = 'none';
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
 </body>
 </html>

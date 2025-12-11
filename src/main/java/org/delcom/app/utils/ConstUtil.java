@@ -6,8 +6,8 @@ public class ConstUtil {
     public static final String TEMPLATE_AUTH_REGISTER = "pages/auth/register";
     
     // PEMISAHAN DASHBOARD
-    public static final String TEMPLATE_DASHBOARD_ADMIN = "pages/dashboard/admin";
-    public static final String TEMPLATE_DASHBOARD_STAFF = "pages/dashboard/staff";
+    public static final String TEMPLATE_DASHBOARD_ADMIN = "pages/admin/dashboard";
+    public static final String TEMPLATE_DASHBOARD_STAFF = "pages/staff/dashboard";
 
     public static final String TEMPLATE_PRODUCT_LIST = "pages/products/list";
     public static final String TEMPLATE_PRODUCT_FORM = "pages/products/form";

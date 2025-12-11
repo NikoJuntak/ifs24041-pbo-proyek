@@ -37,6 +37,8 @@ public class ProductService {
             String filename = fileStorageService.storeFile(imageFile);
             product.setImage(filename);
         }
+        // Set default isDeleted false (meskipun di entity sudah ada default)
+        product.setDeleted(false);
         return productRepository.save(product);
     }
 
@@ -52,7 +54,7 @@ public class ProductService {
         existingProduct.setDescription(updatedData.getDescription());
 
         // LOGIKA GANTI GAMBAR
-        // Jika user mengupload gambar baru
+        // Hanya update jika user mengupload file baru
         if (imageFile != null && !imageFile.isEmpty()) {
             // 1. Hapus gambar lama dari folder (jika ada)
             if (existingProduct.getImage() != null) {
@@ -63,15 +65,18 @@ public class ProductService {
             String newFilename = fileStorageService.storeFile(imageFile);
             existingProduct.setImage(newFilename);
         }
-
+        // Jika imageFile kosong, gambar lama tetap dipertahankan
         return productRepository.save(existingProduct);
     }
-
     @Transactional
     public void deleteProduct(Long id) {
-        Product product = getProductById(id);
-        // Soft Delete: Set flag true, jangan hapus fisik datanya
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Produk tidak ditemukan"));
+        
+        // Set flag deleted menjadi true
         product.setDeleted(true);
+        
+        // Simpan perubahan
         productRepository.save(product);
     }
 }
