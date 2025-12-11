@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil Saya - Mini E-Commerce</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+                    colors: {
+                        brand: { 500: '#4F46E5', 600: '#4338ca', 900: '#312e81' }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 text-slate-800 flex">
+
+    <!-- SIDEBAR (Konsisten dengan Dashboard) -->
+    <aside class="w-64 bg-slate-900 text-white h-screen fixed hidden lg:flex flex-col z-50">
+        <div class="h-16 flex items-center px-6 border-b border-slate-800">
+            <div class="w-8 h-8 rounded bg-brand-500 flex items-center justify-center mr-3">
+                <i class="fas fa-box text-white text-sm"></i>
+            </div>
+            <span class="font-bold text-lg tracking-wide">Mini E-Com</span>
+        </div>
+
+        <nav class="flex-1 py-4 px-3 space-y-1 overflow-y-auto">
+            <a href="/dashboard" class="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+                <i class="fas fa-th-large w-5 text-center"></i>
+                <span class="font-medium">Dashboard</span>
+            </a>
+            <a href="/products" class="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+                <i class="fas fa-box-open w-5 text-center"></i>
+                <span class="font-medium">Produk</span>
+            </a>
+            <a href="/orders" class="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
+                <i class="fas fa-shopping-cart w-5 text-center"></i>
+                <span class="font-medium">Pesanan</span>
+            </a>
+            <!-- Menu Aktif -->
+            <a href="/profile" class="flex items-center gap-3 px-3 py-2.5 bg-brand-600 text-white rounded-lg shadow-lg shadow-brand-500/20 transition-colors">
+                <i class="fas fa-user-cog w-5 text-center"></i>
+                <span class="font-medium">Pengaturan Akun</span>
+            </a>
+        </nav>
+
+        <div class="p-4 border-t border-slate-800">
+            <button onclick="logout()" class="flex w-full items-center gap-3 px-3 py-2.5 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors">
+                <i class="fas fa-sign-out-alt w-5 text-center"></i>
+                <span class="font-medium">Logout</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="lg:ml-64 w-full min-h-screen p-4 lg:p-8">
+        
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <div class="mb-8">
+                <h1 class="text-2xl font-bold text-slate-900">Profil Saya</h1>
+                <p class="text-slate-500 mt-1">Kelola informasi akun dan keamanan Anda.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                
+                <!-- KOLOM KIRI: Kartu Profil -->
+                <div class="md:col-span-1">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 text-center">
+                        <div class="relative inline-block">
+                            <!-- Avatar Inisial -->
+                            <div class="w-24 h-24 rounded-full bg-gradient-to-br from-brand-500 to-purple-600 flex items-center justify-center text-3xl font-bold text-white mb-4 mx-auto shadow-lg shadow-brand-500/30">
+                                <span th:text="${#strings.substring(auth.fullName, 0, 1)}">U</span>
+                            </div>
+                            <div class="absolute bottom-2 right-0 bg-green-500 w-5 h-5 rounded-full border-4 border-white" title="Active"></div>
+                        </div>
+                        
+                        <h2 class="text-xl font-bold text-slate-900" th:text="${auth.fullName}">User Name</h2>
+                        <p class="text-sm text-slate-500 mb-4" th:text="'@' + ${auth.username}">@username</p>
+                        
+                        <div class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">
+                            <i class="fas fa-shield-alt mr-1.5"></i>
+                            <span th:text="${auth.role}">ROLE</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KOLOM KANAN: Form Edit -->
+                <div class="md:col-span-2">
+                    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                        <h3 class="text-lg font-bold text-slate-800 mb-6 border-b pb-4">Edit Informasi</h3>
+                        
+                        <form action="/profile/update" method="post" onsubmit="return handleUpdate(event)">
+                            
+                            <div class="grid gap-6">
+                                <!-- Username (Read Only) -->
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Username</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fas fa-at text-slate-400"></i>
+                                        </div>
+                                        <input type="text" th:value="${auth.username}" disabled 
+                                               class="pl-10 w-full bg-slate-50 border border-slate-200 text-slate-500 rounded-lg p-2.5 cursor-not-allowed">
+                                    </div>
+                                    <p class="text-xs text-slate-400 mt-1">Username tidak dapat diubah.</p>
+                                </div>
+
+                                <!-- Nama Lengkap -->
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fas fa-user text-slate-400"></i>
+                                        </div>
+                                        <input type="text" name="fullName" th:value="${auth.fullName}" required
+                                               class="pl-10 w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all">
+                                    </div>
+                                </div>
+
+                                <!-- Password Baru -->
+                                <div>
+                                    <label class="block text-sm font-medium text-slate-700 mb-1">Password Baru</label>
+                                    <div class="relative">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <i class="fas fa-lock text-slate-400"></i>
+                                        </div>
+                                        <input type="password" name="password" placeholder="Kosongkan jika tidak ingin mengubah"
+                                               class="pl-10 w-full border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-all">
+                                    </div>
+                                    <p class="text-xs text-slate-500 mt-1">Minimal 6 karakter jika ingin diubah.</p>
+                                </div>
+                            </div>
+
+                            <!-- Tombol Aksi -->
+                            <div class="mt-8 flex justify-end gap-3">
+                                <a href="/dashboard" class="px-5 py-2.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg font-medium transition-colors">
+                                    Batal
+                                </a>
+                                <button type="submit" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg font-bold shadow-lg shadow-brand-500/30 transition-all transform hover:-translate-y-0.5">
+                                    <i class="fas fa-save mr-2"></i> Simpan Perubahan
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Script Logic -->
+    <script>
+        // 1. Handle Logout (Hapus Cookie)
+        function logout() {
+            if(confirm("Yakin ingin keluar?")) {
+                document.cookie = "AUTH_TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                window.location.href = "/auth/login";
+            }
+        }
+
+        // 2. Notifikasi Simpan (Optional UI Enhancement)
+        // Karena form submit biasa akan reload halaman, kita bisa tambahkan efek simple
+        function handleUpdate(e) {
+            // Biarkan form submit secara natural ke backend
+            // Backend akan redirect kembali ke /dashboard atau /profile
+            // Kita bisa tambahkan alert selamat jika perlu nanti
+            return true; 
+        }
+    </script>
+</body>
+</html>

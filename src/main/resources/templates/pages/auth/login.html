@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Mini E-Com</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1' }
+                    },
+                    fontFamily: { 'inter': ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-inter bg-gray-50 h-screen flex items-center justify-center">
+
+    <div class="flex w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden m-4 h-[600px]">
+        
+        <!-- Bagian Kiri: Gambar/Info -->
+        <div class="hidden md:flex md:w-1/2 bg-gradient-to-br from-primary-600 to-blue-800 text-white p-10 flex-col justify-between relative overflow-hidden">
+            <div class="relative z-10">
+                <div class="flex items-center space-x-2 mb-8">
+                    <div class="w-8 h-8 rounded bg-white/20 flex items-center justify-center">
+                        <i class="fas fa-box text-white"></i>
+                    </div>
+                    <span class="text-xl font-bold">Mini E-Com</span>
+                </div>
+                <h2 class="text-3xl font-bold mb-4">Selamat Datang Kembali!</h2>
+                <p class="text-blue-100">Kelola bisnis Anda dengan lebih cerdas dan efisien dalam satu dashboard terintegrasi.</p>
+            </div>
+            
+            <!-- Hiasan Background -->
+            <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+            <div class="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -ml-16 -mb-16"></div>
+            
+            <div class="relative z-10 text-sm text-blue-200">
+                &copy; 2024 Mini E-Commerce App
+            </div>
+        </div>
+
+        <!-- Bagian Kanan: Form Login -->
+        <div class="w-full md:w-1/2 p-10 flex flex-col justify-center">
+            <div class="text-center md:text-left mb-8">
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">Masuk ke Akun</h3>
+                <p class="text-gray-500 text-sm">Silakan masukkan detail akun Anda untuk melanjutkan.</p>
+            </div>
+
+            <form id="loginForm" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                            <i class="far fa-user"></i>
+                        </span>
+                        <input type="text" id="username" required 
+                               class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
+                               placeholder="Masukkan username Anda">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <input type="password" id="password" required 
+                               class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
+                               placeholder="••••••••">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between text-sm">
+                    <label class="flex items-center text-gray-600 cursor-pointer">
+                        <input type="checkbox" class="w-4 h-4 rounded text-primary-600 border-gray-300 focus:ring-primary-500 mr-2">
+                        Ingat saya
+                    </label>
+                    <a href="#" class="text-primary-600 hover:text-primary-700 font-medium">Lupa password?</a>
+                </div>
+
+                <button type="submit" id="btnLogin"
+                        class="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5">
+                    Masuk Sekarang
+                </button>
+            </form>
+
+            <div class="mt-8 text-center text-sm text-gray-600">
+                Belum punya akun? 
+                <a href="/auth/register" class="text-primary-600 hover:text-primary-700 font-bold">Daftar Gratis</a>
+            </div>
+            
+             <div class="mt-6 text-center">
+                 <a href="/" class="text-gray-400 hover:text-gray-600 text-sm flex items-center justify-center gap-2">
+                     <i class="fas fa-arrow-left"></i> Kembali ke Beranda
+                 </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Logic Login (AJAX + JWT) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('btnLogin');
+            const originalText = btn.innerHTML;
+
+            // Efek Loading
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Memproses...';
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
+
+            fetch('/api/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: username, password: password })
+            })
+            .then(response => response.json())
+            .then(res => {
+                if (res.status === 200) {
+                    // Simpan Token di Cookie agar Thymeleaf (Server) bisa membacanya
+                    document.cookie = `AUTH_TOKEN=${res.data.token}; path=/; max-age=86400`;
+                    
+                    // Simpan juga di LocalStorage (Opsional untuk Client side fetch)
+                    localStorage.setItem('token', res.data.token);
+
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 2000,
+                        timerProgressBar: true
+                    });
+                    
+                    Toast.fire({
+                        icon: 'success',
+                        title: 'Login Berhasil'
+                    }).then(() => {
+                        window.location.href = '/dashboard';
+                    });
+                } else {
+                    throw new Error(res.message || "Gagal Login");
+                }
+            })
+            .catch(err => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal Masuk',
+                    text: err.message,
+                    confirmButtonColor: '#0ea5e9'
+                });
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
+            });
+        });
+    </script>
+</body>
+</html>

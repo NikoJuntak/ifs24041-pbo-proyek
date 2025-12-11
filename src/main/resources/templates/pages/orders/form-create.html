@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Buat Pesanan Baru</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="bg-gray-50 flex">
+
+    <!-- SIDEBAR (Copy dari file lain atau gunakan th:replace jika sudah paham fragment) -->
+    <aside class="w-64 bg-slate-900 text-white h-screen fixed p-6">
+        <h1 class="font-bold text-xl mb-6">Mini E-Com</h1>
+        <a href="/dashboard" class="block py-2 text-slate-400">Dashboard</a>
+        <a href="/orders" class="block py-2 text-white font-bold">Pesanan</a>
+    </aside>
+
+    <main class="ml-64 w-full p-8">
+        <h1 class="text-2xl font-bold text-slate-800 mb-6">Buat Pesanan Baru</h1>
+
+        <div class="grid grid-cols-3 gap-6">
+            <!-- KOLOM KIRI: Form Input Item -->
+            <div class="col-span-1 bg-white p-6 rounded-xl shadow-sm h-fit">
+                <h3 class="font-bold mb-4">Tambah Produk</h3>
+                
+                <div class="mb-4">
+                    <label class="block text-sm mb-1">Nama Pelanggan</label>
+                    <input type="text" id="customerName" class="w-full border p-2 rounded" placeholder="Cth: Bapak Budi">
+                </div>
+
+                <hr class="my-4">
+
+                <div class="mb-3">
+                    <label class="block text-sm mb-1">Pilih Produk</label>
+                    <select id="productSelect" class="w-full border p-2 rounded">
+                        <option value="">-- Pilih Produk --</option>
+                        <!-- Loop Produk dari Database -->
+                        <option th:each="prod : ${products}" 
+                                th:value="${prod.id}" 
+                                th:data-price="${prod.price}"
+                                th:data-name="${prod.name}"
+                                th:text="${prod.name} + ' (Stok: ' + ${prod.stock} + ')'">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm mb-1">Jumlah</label>
+                    <input type="number" id="qtyInput" value="1" min="1" class="w-full border p-2 rounded">
+                </div>
+
+                <button onclick="addItem()" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+                    <i class="fas fa-plus"></i> Tambah ke Keranjang
+                </button>
+            </div>
+
+            <!-- KOLOM KANAN: Tabel Keranjang -->
+            <div class="col-span-2 bg-white p-6 rounded-xl shadow-sm">
+                <h3 class="font-bold mb-4">Keranjang Pesanan</h3>
+                
+                <table class="w-full text-sm text-left">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="p-3">Produk</th>
+                            <th class="p-3">Harga</th>
+                            <th class="p-3">Qty</th>
+                            <th class="p-3">Subtotal</th>
+                            <th class="p-3">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cartTable">
+                        <!-- Item akan masuk sini via JS -->
+                    </tbody>
+                    <tfoot class="border-t font-bold bg-gray-50">
+                        <tr>
+                            <td colspan="3" class="p-3 text-right">TOTAL:</td>
+                            <td class="p-3 text-green-600 text-lg" id="grandTotal">Rp 0</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div class="mt-6 flex justify-end gap-3">
+                    <a href="/orders" class="px-4 py-2 text-gray-600 bg-gray-200 rounded">Batal</a>
+                    <button onclick="submitOrder()" class="px-6 py-2 bg-green-600 text-white rounded font-bold hover:bg-green-700">
+                        Simpan Pesanan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- LOGIKA JAVASCRIPT -->
+    <script>
+        let cart = []; // Array untuk menampung item
+
+        function addItem() {
+            const select = document.getElementById('productSelect');
+            const qtyInput = document.getElementById('qtyInput');
+            const selectedOption = select.options[select.selectedIndex];
+
+            if(!select.value) {
+                alert("Pilih produk dulu!"); return;
+            }
+
+            const productId = parseInt(select.value);
+            const name = selectedOption.getAttribute('data-name');
+            const price = parseFloat(selectedOption.getAttribute('data-price'));
+            const qty = parseInt(qtyInput.value);
+
+            // Cek apakah produk sudah ada di cart
+            const existingItem = cart.find(item => item.productId === productId);
+            if(existingItem) {
+                existingItem.quantity += qty;
+            } else {
+                cart.push({ productId, name, price, quantity: qty });
+            }
+
+            renderCart();
+        }
+
+        function removeItem(index) {
+            cart.splice(index, 1);
+            renderCart();
+        }
+
+        function renderCart() {
+            const tbody = document.getElementById('cartTable');
+            const totalEl = document.getElementById('grandTotal');
+            tbody.innerHTML = '';
+            let total = 0;
+
+            cart.forEach((item, index) => {
+                const subtotal = item.price * item.quantity;
+                total += subtotal;
+
+                tbody.innerHTML += `
+                    <tr class="border-b">
+                        <td class="p-3">${item.name}</td>
+                        <td class="p-3">Rp ${item.price}</td>
+                        <td class="p-3">${item.quantity}</td>
+                        <td class="p-3 font-bold">Rp ${subtotal}</td>
+                        <td class="p-3">
+                            <button onclick="removeItem(${index})" class="text-red-500 hover:text-red-700">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            totalEl.innerText = "Rp " + total;
+        }
+
+        function submitOrder() {
+            const customerName = document.getElementById('customerName').value;
+            
+            if(!customerName || cart.length === 0) {
+                Swal.fire('Error', 'Nama pelanggan dan keranjang tidak boleh kosong!', 'error');
+                return;
+            }
+
+            // Siapkan JSON
+            const payload = {
+                customerName: customerName,
+                items: cart.map(i => ({ productId: i.productId, quantity: i.quantity }))
+            };
+
+            const token = document.cookie.split('; ').find(row => row.startsWith('AUTH_TOKEN=')).split('=')[1];
+
+            fetch('/api/orders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + token
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 200) {
+                    Swal.fire('Sukses', 'Pesanan berhasil dibuat!', 'success').then(() => {
+                        window.location.href = '/orders';
+                    });
+                } else {
+                    Swal.fire('Gagal', data.message, 'error');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
