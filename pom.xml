@@ -81,12 +81,6 @@
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 
-		<!-- Dependency for Spring Boot Web MVC Test -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-webmvc-test</artifactId>
-			<scope>test</scope>
-		</dependency>
 
 		<!-- Dependency for Spring Boot Test -->
 		<dependency>
@@ -249,9 +243,8 @@
 					<excludes>
 						<!-- Exclude specific classes -->
 						<exclude>**/utils/**</exclude>
-						<exclude>**/configs/**</exclude>
-						<exclude>**/dto/**</exclude>
 						<exclude>**/views/**</exclude>
+						<exclude>**/security/**</exclude>
 					</excludes>
 
 					<rules>

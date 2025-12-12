@@ -6,7 +6,7 @@ import org.delcom.app.dto.auth.RegisterRequest;
 import org.delcom.app.entities.User;
 import org.delcom.app.entities.UserRole;
 import org.delcom.app.repositories.UserRepository;
-import org.delcom.app.utils.JwtUtils; // Pastikan JwtUtils ada di folder utils
+import org.delcom.app.utils.JwtUtils; 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;

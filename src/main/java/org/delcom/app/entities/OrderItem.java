@@ -29,8 +29,16 @@ public class OrderItem {
     public OrderItem() {
     }
 
+
     // Constructor Parameter
     public OrderItem(Product product, Integer quantity, BigDecimal subtotal) {
+        this.product = product;
+        this.quantity = quantity;
+        this.subtotal = subtotal;
+    }
+
+    public OrderItem(Order order, Product product, Integer quantity, BigDecimal subtotal) {
+        this.order = order;
         this.product = product;
         this.quantity = quantity;
         this.subtotal = subtotal;
