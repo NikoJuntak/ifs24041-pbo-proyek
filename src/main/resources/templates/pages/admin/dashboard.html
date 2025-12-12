@@ -1,99 +1,208 @@
 <!DOCTYPE html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Executive Dashboard - Admin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <script>
         tailwind.config = {
             theme: {
-                extend: { colors: { brand: { 500: '#4F46E5', 600: '#4338ca' } }, fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] } }
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1' },
+                        dark: { 700: '#1e293b', 800: '#1a2332', 900: '#0f172a' }
+                    }
+                }
             }
         }
     </script>
-    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+    <style>
+        body { background: linear-gradient(to bottom right, #f8fafc, #e2e8f0); }
+        .glass { background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .card-hover:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+    </style>
 </head>
-<body class="bg-gray-50 flex text-slate-800">
+<body class="min-h-screen text-slate-800">
 
-    <!-- SIDEBAR ADMIN -->
-    <aside class="w-64 bg-slate-900 text-white h-screen fixed flex flex-col z-50">
-        <div class="h-16 flex items-center px-6 border-b border-slate-800 font-bold text-lg tracking-wide">
-            <div class="w-8 h-8 rounded bg-indigo-600 flex items-center justify-center mr-3"><i class="fas fa-crown text-xs"></i></div>
-            Mini E-Com
+    <!-- SIDEBAR - Glassmorphism + Gradient -->
+    <aside class="fixed inset-y-0 left-0 w-72 bg-gradient-to-b from-slate-900 via-slate-800 to-dark-900 text-white z-50 shadow-2xl">
+        <div class="h-20 flex items-center px-8 border-b border-white/10">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-primary-600 flex items-center justify-center mr-3 shadow-lg">
+                <i class="fas fa-crown text-white"></i>
+            </div>
+            <span class="text-xl font-bold tracking-tight">Mini E-Com</span>
         </div>
-        <div class="p-6 border-b border-slate-800 bg-slate-800/50">
-            <h5 class="font-bold text-sm" th:text="${auth.fullName}">Admin</h5>
-            <span class="text-xs bg-indigo-500 px-2 py-0.5 rounded border border-indigo-400/30">ADMINISTRATOR</span>
+
+        <div class="p-6 bg-white/5 backdrop-blur border-b border-white/10">
+            <h5 class="font-semibold text-lg" th:text="${auth.fullName}">Administrator</h5>
+            <span class="text-xs bg-gradient-to-r from-sky-500 to-primary-600 px-3 py-1 rounded-full font-medium shadow-md mt-2 inline-block">ADMINISTRATOR</span>
         </div>
-        <nav class="flex-1 py-4 px-3 space-y-1">
-            <!-- AKTIF -->
-            <a href="/dashboard" class="flex items-center gap-3 px-3 py-2.5 bg-indigo-600 text-white rounded-lg shadow-lg shadow-indigo-900/50">
+
+        <nav class="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
+            <a href="/dashboard" class="flex items-center gap-4 px-5 py-3.5 bg-gradient-to-r from-primary-600 to-sky-500 rounded-2xl shadow-lg text-white font-medium transform transition-all hover:scale-105">
                 <i class="fas fa-chart-pie w-5 text-center"></i> Overview
             </a>
-            <a href="/products" class="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition"><i class="fas fa-database w-5 text-center"></i> Data Produk</a>
-            <a href="/orders" class="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition"><i class="fas fa-file-invoice-dollar w-5 text-center"></i> Laporan Order</a>
-            
-            <div class="pt-4 mt-4 border-t border-slate-800">
-                <p class="px-3 text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">User Management</p>
-                <!-- FIXED LINK: Mengarah ke Controller Admin Staff, bukan Register Publik -->
-                <a href="/admin/staff" class="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition">
+            <a href="/products" class="flex items-center gap-4 px-5 py-3.5 text-slate-300 hover:bg-white/10 hover:text-white rounded-2xl transition-all duration-200">
+                <i class="fas fa-database w-5 text-center"></i> Data Produk
+            </a>
+            <a href="/orders" class="flex items-center gap-4 px-5 py-3.5 text-slate-300 hover:bg-white/10 hover:text-white rounded-2xl transition-all duration-200">
+                <i class="fas fa-file-invoice-dollar w-5 text-center"></i> Laporan Order
+            </a>
+
+            <div class="pt-6 mt-6 border-t border-white/10">
+                <p class="px-5 text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">User Management</p>
+                <a href="/admin/staff" class="flex items-center gap-4 px-5 py-3.5 text-slate-300 hover:bg-white/10 hover:text-white rounded-2xl transition-all duration-200">
                     <i class="fas fa-users-cog w-5 text-center"></i> Kelola Staff
                 </a>
             </div>
         </nav>
-        <div class="p-4 border-t border-slate-800">
-            <button onclick="logout()" class="flex w-full items-center gap-3 px-3 py-2.5 text-red-400 hover:bg-slate-800 rounded-lg transition"><i class="fas fa-sign-out-alt w-5 text-center"></i> Logout</button>
+
+        <div class="p-4 border-t border-white/10 absolute bottom-0 w-full">
+            <button onclick="logout()" class="flex w-full items-center justify-center gap-3 px-5 py-3.5 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 rounded-2xl transition-all duration-200 font-medium">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
         </div>
     </aside>
 
-    <!-- CONTENT -->
-    <main class="ml-64 w-full p-8 min-h-screen">
-        <div class="flex justify-between items-end mb-8">
-            <div>
-                <h1 class="text-3xl font-bold text-slate-900">Executive Dashboard</h1>
-                <p class="text-slate-500 mt-1">Ringkasan performa toko hari ini.</p>
+    <!-- MAIN CONTENT -->
+    <main class="ml-72 p-8 lg:p-12 min-h-screen">
+        <div class="max-w-7xl mx-auto">
+            <!-- Header -->
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4">
+                <div>
+                    <h1 class="text-4xl font-extrabold text-slate-800 tracking-tight">Executive Dashboard</h1>
+                    <p class="text-slate-500 mt-2 text-lg">Ringkasan performa toko Anda hari ini.</p>
+                </div>
+                <div class="text-right bg-white px-6 py-3 rounded-2xl shadow-sm border border-slate-200">
+                    <p class="text-2xl font-bold text-slate-700" th:text="${#dates.format(#dates.createNow(), 'EEEE, dd MMMM')}">Senin, 01 Jan</p>
+                    <p class="text-sm text-slate-500" th:text="${#dates.format(#dates.createNow(), 'yyyy')}">2024</p>
+                </div>
             </div>
-            <div class="text-right text-sm text-slate-500">
-                <span th:text="${#dates.format(#dates.createNow(), 'EEEE, dd MMMM yyyy')}"></span>
-            </div>
-        </div>
 
-        <!-- STATS -->
-        <div class="grid grid-cols-4 gap-6 mb-8">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Total Pendapatan</p>
-                <h3 class="text-2xl font-bold text-slate-900 mt-2" th:text="'Rp ' + ${#numbers.formatDecimal(summary?.totalRevenue ?: 0, 0, 'COMMA', 0, 'POINT')}">Rp 0</h3>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Order Selesai</p>
-                <h3 class="text-2xl font-bold text-slate-900 mt-2" th:text="${summary?.countDone ?: 0}">0</h3>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Sedang Diproses</p>
-                <h3 class="text-2xl font-bold text-slate-900 mt-2" th:text="${summary?.countProcessing ?: 0}">0</h3>
-            </div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <p class="text-xs text-slate-500 font-bold uppercase tracking-wider">Order Baru</p>
-                <h3 class="text-2xl font-bold text-slate-900 mt-2" th:text="${summary?.countNew ?: 0}">0</h3>
-            </div>
-        </div>
+            <!-- Stats Cards - Glassmorphism + Hover Lift -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-8 mb-12">
+                <!-- Revenue -->
+                <div class="glass rounded-3xl p-8 card-hover transition-all duration-300 relative overflow-hidden group">
+                    <!-- Dekorasi Background -->
+                    <div class="absolute right-0 top-0 w-32 h-32 bg-emerald-500/10 rounded-full -mr-10 -mt-10 transition-transform group-hover:scale-150"></div>
+                    
+                    <div class="flex items-center justify-between relative z-10">
+                        <div>
+                            <p class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Total Pendapatan</p>
+                            <h3 class="text-3xl font-extrabold text-slate-800 tracking-tight" 
+                                th:text="'Rp ' + ${#numbers.formatDecimal(summary?.totalRevenue ?: 0, 0, 'COMMA', 0, 'POINT')}">Rp 0</h3>
+                        </div>
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-xl text-white text-2xl">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                    </div>
 
-        <!-- CHART -->
-        <div class="grid grid-cols-3 gap-6">
-            <div class="col-span-2 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                <h3 class="font-bold text-slate-800 mb-6">Analisis Penjualan</h3>
-                <div class="h-72"><canvas id="adminChart"></canvas></div>
+                    <!-- PENGGANTI PERSEN: Penanda Periode Bulan Ini -->
+                    <div class="mt-4 flex items-center text-sm font-medium text-slate-500">
+                        <!-- Badge Bulan -->
+                        <span class="bg-emerald-50 border border-emerald-100 text-emerald-700 px-3 py-1 rounded-lg mr-2 flex items-center gap-2 shadow-sm">
+                            <i class="far fa-calendar-check"></i>
+                            <!-- Mengambil Tanggal Hari Ini secara Realtime dari Server/Thymeleaf -->
+                            <span th:text="${#dates.format(#dates.createNow(), 'MMMM yyyy')}">Januari 2024</span>
+                        </span>
+                        <span class="text-xs text-slate-400">Akumulasi berjalan</span>
+                    </div>
+                </div>
+                <!-- Done -->
+                <div class="glass rounded-3xl p-8 card-hover transition-all duration-300 relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 w-32 h-32 bg-blue-500/10 rounded-full -mr-10 -mt-10 transition-transform group-hover:scale-150"></div>
+                    <div class="flex items-center justify-between relative z-10">
+                        <div>
+                            <p class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Order Selesai</p>
+                            <h3 class="text-3xl font-extrabold text-slate-800 tracking-tight" th:text="${summary?.countDone ?: 0}">0</h3>
+                        </div>
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-xl flex items-center justify-center text-white text-2xl">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-sm font-medium text-slate-400">Transaksi sukses</div>
+                </div>
+
+                <!-- Processing -->
+                <div class="glass rounded-3xl p-8 card-hover transition-all duration-300 relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 w-32 h-32 bg-amber-500/10 rounded-full -mr-10 -mt-10 transition-transform group-hover:scale-150"></div>
+                    <div class="flex items-center justify-between relative z-10">
+                        <div>
+                            <p class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Sedang Diproses</p>
+                            <h3 class="text-3xl font-extrabold text-slate-800 tracking-tight" th:text="${summary?.countProcessing ?: 0}">0</h3>
+                        </div>
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 shadow-xl flex items-center justify-center text-white text-2xl">
+                            <i class="fas fa-sync-alt fa-spin"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-sm font-medium text-slate-400">Sedang berjalan</div>
+                </div>
+
+                <!-- New -->
+                <div class="glass rounded-3xl p-8 card-hover transition-all duration-300 relative overflow-hidden group">
+                    <div class="absolute right-0 top-0 w-32 h-32 bg-rose-500/10 rounded-full -mr-10 -mt-10 transition-transform group-hover:scale-150"></div>
+                    <div class="flex items-center justify-between relative z-10">
+                        <div>
+                            <p class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-1">Order Baru</p>
+                            <h3 class="text-3xl font-extrabold text-slate-800 tracking-tight" th:text="${summary?.countNew ?: 0}">0</h3>
+                        </div>
+                        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 shadow-xl flex items-center justify-center text-white text-2xl">
+                            <i class="fas fa-bell fa-shake"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-sm font-medium text-rose-500 font-bold">Perlu tindakan segera</div>
+                </div>
             </div>
-            <div class="bg-gradient-to-br from-indigo-700 to-purple-800 text-white p-6 rounded-2xl shadow-lg flex flex-col justify-center">
-                <h3 class="font-bold text-lg mb-2">Kontrol Cepat</h3>
-                <p class="text-indigo-200 text-sm mb-6">Akses menu manajemen utama.</p>
-                <div class="space-y-3">
-                    <a href="/products/create" class="block w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl font-bold text-center transition backdrop-blur-sm border border-white/10">Tambah Produk</a>
-                    <a href="/admin/staff" class="block w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl font-bold text-center transition backdrop-blur-sm border border-white/10">Kelola Staff</a>
+
+            <!-- Chart + Quick Actions -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Chart -->
+                <div class="lg:col-span-2 glass rounded-3xl p-8 shadow-xl border border-white/50">
+                    <div class="flex justify-between items-center mb-8">
+                        <h3 class="text-2xl font-bold text-slate-800">Analisis Penjualan</h3>
+                        <select class="bg-slate-100 border-none text-slate-600 text-sm rounded-lg px-4 py-2 font-medium focus:ring-2 focus:ring-primary-500 cursor-pointer">
+                            <option>Bulan Ini</option>
+                            <option>Minggu Ini</option>
+                            <option>Tahun Ini</option>
+                        </select>
+                    </div>
+                    <div class="h-80"><canvas id="adminChart"></canvas></div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="bg-gradient-to-br from-primary-600 via-sky-600 to-cyan-500 rounded-3xl p-8 text-white shadow-2xl flex flex-col justify-center relative overflow-hidden">
+                    <!-- Background Decoration -->
+                    <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
+                    <div class="absolute bottom-0 left-0 w-48 h-48 bg-black/10 rounded-full blur-3xl -ml-10 -mb-10"></div>
+
+                    <div class="relative z-10">
+                        <h3 class="text-2xl font-bold mb-2">Kontrol Cepat</h3>
+                        <p class="text-sky-100 mb-8 text-sm opacity-90 font-medium">Akses fitur penting dalam satu klik.</p>
+                        
+                        <div class="space-y-4">
+                            <a href="/products/create" class="flex items-center justify-between w-full p-4 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-2xl font-bold transition-all duration-300 border border-white/20 shadow-lg group">
+                                <span class="flex items-center gap-3"><i class="fas fa-plus bg-white/20 p-2 rounded-lg"></i> Tambah Produk</span>
+                                <i class="fas fa-arrow-right opacity-0 group-hover:opacity-100 transform translate-x-[-10px] group-hover:translate-x-0 transition-all"></i>
+                            </a>
+                            <a href="/admin/staff" class="flex items-center justify-between w-full p-4 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-2xl font-bold transition-all duration-300 border border-white/20 shadow-lg group">
+                                <span class="flex items-center gap-3"><i class="fas fa-users-cog bg-white/20 p-2 rounded-lg"></i> Kelola Staff</span>
+                                <i class="fas fa-arrow-right opacity-0 group-hover:opacity-100 transform translate-x-[-10px] group-hover:translate-x-0 transition-all"></i>
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -101,7 +210,24 @@
 
     <script th:inline="javascript">
         function logout() {
-            Swal.fire({ title: 'Logout?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33', confirmButtonText: 'Ya' }).then((result) => { if (result.isConfirmed) { document.cookie = "AUTH_TOKEN=; path=/; max-age=0"; window.location.href = "/auth/logout"; } });
+            Swal.fire({
+                title: 'Yakin ingin logout?',
+                text: "Sesi Anda akan berakhir.",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Logout',
+                cancelButtonText: 'Batal',
+                background: '#fff',
+                borderRadius: '1.5rem',
+                customClass: { popup: 'rounded-3xl shadow-xl' }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.cookie = "AUTH_TOKEN=; path=/; max-age=0";
+                    window.location.href = "/auth/logout";
+                }
+            });
         }
 
         const ctx = document.getElementById('adminChart').getContext('2d');
@@ -114,11 +240,19 @@
                 labels: labels,
                 datasets: [{
                     data: dataValues,
-                    backgroundColor: ['#f59e0b', '#3b82f6', '#10b981', '#6b7280'],
-                    borderWidth: 0
+                    backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#f43f5e'],
+                    borderWidth: 0,
+                    hoverOffset: 20
                 }]
             },
-            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'right' } } }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { padding: 20, font: { size: 12, family: "'Inter', sans-serif" }, usePointStyle: true } }
+                }
+            }
         });
     </script>
 </body>

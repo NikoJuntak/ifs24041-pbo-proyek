@@ -22,10 +22,7 @@ public class OrderItem {
     @Column(nullable = false)
     private Integer quantity;
 
-    @Column(nullable = false, precision = 10, scale = 2)
-    private BigDecimal price; // Harga per item saat transaksi
-
-    @Column(nullable = false, precision = 10, scale = 2)
+    @Column(nullable = false)
     private BigDecimal subtotal;
 
     // Constructor Kosong
@@ -33,10 +30,9 @@ public class OrderItem {
     }
 
     // Constructor Parameter
-    public OrderItem(Product product, Integer quantity, BigDecimal price, BigDecimal subtotal) {
+    public OrderItem(Product product, Integer quantity, BigDecimal subtotal) {
         this.product = product;
         this.quantity = quantity;
-        this.price = price;
         this.subtotal = subtotal;
     }
 
@@ -71,14 +67,6 @@ public class OrderItem {
 
     public void setQuantity(Integer quantity) {
         this.quantity = quantity;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
     }
 
     public BigDecimal getSubtotal() {

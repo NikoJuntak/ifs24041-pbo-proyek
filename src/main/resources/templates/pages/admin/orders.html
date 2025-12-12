@@ -1,749 +1,479 @@
 <!DOCTYPE html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Laporan Order - Admin</title>
-    
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1' },
+                        dark: { 700: '#1e293b', 800: '#1a2332', 900: '#0f172a' }
+                    }
+                }
+            }
+        }
+    </script>
 
-        /* --- PRINT STYLING (Agar Invoice Cantik) --- */
+    <style>
+        body { background: linear-gradient(to bottom right, #f8fafc, #e2e8f0); }
+        .glass { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.5); }
+        
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* ========================================= */
+        /* PRINT STYLING (PROFESSIONAL INVOICE)      */
+        /* ========================================= */
         @media print {
-            body * { visibility: hidden; } /* Sembunyikan semua */
-            #printableArea, #printableArea * { visibility: visible; } /* Tampilkan area invoice saja */
-            
-            #printableArea {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                margin: 0;
-                padding: 20px;
-                background: white;
-                color: black;
+            /* 1. Atur Ukuran Kertas A4 & Margin Halaman */
+            @page {
+                size: A4;
+                margin: 0; /* Kita atur margin lewat padding container agar background header bisa full bleed jika perlu */
             }
 
-            /* Sembunyikan elemen dekoratif saat print */
-            .no-print, .modal-close-btn, .modal-footer { display: none !important; }
-            
-            /* Style Tabel Print */
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border-bottom: 1px solid #ddd; padding: 8px; text-align: left; }
-            
-            /* Logo & Header Print */
-            .print-header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #000; padding-bottom: 10px; }
-            .print-logo { font-size: 24px; font-weight: bold; text-transform: uppercase; }
-        }
+            /* 2. Sembunyikan elemen Web yang tidak perlu */
+            body > *:not(#invoiceModal) { display: none !important; }
+            .no-print, .modal-backdrop, .modal-footer, button, .fa-times { display: none !important; }
 
-        /* Style untuk dropdown produk */
-        #productSelect {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            background-position: right 0.5rem center;
-            background-repeat: no-repeat;
-            background-size: 1.5em 1.5em;
+            /* 3. Reset Body */
+            body {
+                background: white !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                -webkit-print-color-adjust: exact !important; /* Paksa cetak warna background */
+                print-color-adjust: exact !important;
+            }
+
+            /* 4. Atur Wrapper Modal agar menjadi halaman penuh */
+            #invoiceModal {
+                position: absolute !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                height: auto !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: white !important;
+                display: block !important;
+                z-index: 9999 !important;
+                overflow: visible !important;
+            }
+
+            /* 5. Hilangkan efek kartu/modal (shadow, rounded corners) */
+            #invoiceModal > div {
+                position: static !important;
+                transform: none !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
+
+            /* 6. Atur Area Konten (Padding Kertas) */
+            #printableArea {
+                padding: 2.5cm !important; /* Margin standar surat resmi */
+                font-family: 'Times New Roman', serif !important; /* Opsional: Font serif terlihat lebih resmi di kertas */
+                color: #000 !important;
+                display: block !important;
+                overflow: visible !important;
+            }
+
+            /* 7. Penyesuaian Tipografi untuk Cetak */
+            #printableArea h1 { font-size: 24pt !important; color: #000 !important; }
+            #printableArea p { font-size: 11pt !important; color: #333 !important; }
+            #printableArea .text-slate-400 { color: #666 !important; }
+            #printableArea .text-slate-500 { color: #444 !important; }
+            
+            /* Header Invoice di dalam Modal (yang warna hitam) agar tidak tercetak blok hitam besar jika tinta mau hemat, 
+               TAPI jika ingin tetap hitam elegan, biarkan seperti ini: */
+            .bg-slate-900 { 
+                background-color: #1a202c !important; 
+                color: white !important; 
+            }
+
+            /* 8. Tabel yang Rapi */
+            table { width: 100% !important; border-collapse: collapse !important; }
+            thead tr { border-bottom: 2px solid #000 !important; }
+            th { 
+                padding: 10px 0 !important; 
+                font-size: 10pt !important; 
+                text-transform: uppercase !important; 
+                color: #000 !important;
+            }
+            td { 
+                padding: 8px 0 !important; 
+                border-bottom: 1px solid #eee !important; 
+                font-size: 11pt !important; 
+            }
+            
+            /* Total Section */
+            #invTotal { font-size: 16pt !important; color: #000 !important; }
         }
     </style>
 </head>
-<body class="bg-gray-50 flex text-slate-800">
+<body class="min-h-screen text-slate-800 font-sans">
 
-    <!-- SIDEBAR ADMIN -->
-    <aside class="w-64 bg-slate-900 text-white h-screen fixed flex flex-col z-50">
-        <div class="h-16 flex items-center px-6 border-b border-slate-800 font-bold text-lg tracking-wide">
-            <div class="w-8 h-8 rounded bg-indigo-600 flex items-center justify-center mr-3"><i class="fas fa-crown text-xs"></i></div>
-            Mini E-Com
+<!-- SIDEBAR -->
+<aside class="fixed inset-y-0 left-0 w-72 bg-gradient-to-b from-slate-900 via-slate-800 to-dark-900 text-white z-50 shadow-2xl no-print">
+    <div class="h-20 flex items-center px-8 border-b border-white/10">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-primary-600 flex items-center justify-center mr-3 shadow-lg">
+            <i class="fas fa-crown text-white"></i>
         </div>
-        <div class="p-6 border-b border-slate-800 bg-slate-800/50">
-            <h5 class="font-bold text-sm" th:text="${auth.fullName}">Admin</h5>
-            <span class="text-xs bg-indigo-500 px-2 py-0.5 rounded border border-indigo-400/30">ADMINISTRATOR</span>
-        </div>
-        <nav class="flex-1 py-4 px-3 space-y-1">
-            <a href="/dashboard" class="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition">
-                <i class="fas fa-chart-pie w-5 text-center"></i> Overview
-            </a>
-            <a href="/products" class="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition">
-                <i class="fas fa-database w-5 text-center"></i> Data Produk
-            </a>
-            <!-- MENU AKTIF -->
-            <a href="/orders" class="flex items-center gap-3 px-3 py-2.5 bg-indigo-600 text-white rounded-lg shadow-lg shadow-indigo-500/20 transition">
-                <i class="fas fa-file-invoice-dollar w-5 text-center"></i> Laporan Order
-            </a>
-            <div class="pt-4 mt-4 border-t border-slate-800">
-                <a href="/auth/register" class="flex items-center gap-3 px-3 py-2.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition">
-                    <i class="fas fa-users-cog w-5 text-center"></i> Kelola Staff
-                </a>
-            </div>
-        </nav>
-        <div class="p-4 border-t border-slate-800">
-            <button onclick="logout()" class="flex w-full items-center gap-3 px-3 py-2.5 text-red-400 hover:bg-slate-800 rounded-lg transition">
-                <i class="fas fa-sign-out-alt w-5 text-center"></i> Logout
-            </button>
-        </div>
-    </aside>
+        <span class="text-xl font-bold tracking-tight">Mini E-Com</span>
+    </div>
 
-    <!-- MAIN CONTENT -->
-    <main class="ml-64 w-full p-8 min-h-screen">
+    <div class="p-6 bg-white/5 backdrop-blur border-b border-white/10">
+        <h5 class="font-semibold text-lg" th:text="${auth.fullName}">Administrator</h5>
+        <span class="text-xs bg-gradient-to-r from-sky-500 to-primary-600 px-3 py-1 rounded-full font-medium shadow-md mt-2 inline-block">ADMINISTRATOR</span>
+    </div>
+
+    <nav class="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
+        <a href="/dashboard" class="flex items-center gap-4 px-5 py-3.5 text-slate-300 hover:bg-white/10 hover:text-white rounded-2xl transition-all duration-200">
+            <i class="fas fa-chart-pie w-5 text-center"></i> Overview
+        </a>
+        <a href="/products" class="flex items-center gap-4 px-5 py-3.5 text-slate-300 hover:bg-white/10 hover:text-white rounded-2xl transition-all duration-200">
+            <i class="fas fa-database w-5 text-center"></i> Data Produk
+        </a>
+        <a href="/orders" class="flex items-center gap-4 px-5 py-3.5 bg-gradient-to-r from-primary-600 to-sky-500 rounded-2xl shadow-lg text-white font-medium transform transition-all hover:scale-105">
+            <i class="fas fa-file-invoice-dollar w-5 text-center"></i> Laporan Order
+        </a>
+        <div class="pt-6 mt-6 border-t border-white/10">
+            <a href="/admin/staff" class="flex items-center gap-4 px-5 py-3.5 text-slate-300 hover:bg-white/10 hover:text-white rounded-2xl transition-all duration-200">
+                <i class="fas fa-users-cog w-5 text-center"></i> Kelola Staff
+            </a>
+        </div>
+    </nav>
+    <div class="p-4 border-t border-white/10 absolute bottom-0 w-full">
+        <button onclick="logout()" class="flex w-full items-center justify-center gap-3 px-5 py-3.5 text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 rounded-2xl transition-all duration-200 font-medium">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+    </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="ml-72 p-8 lg:p-12 min-h-screen transition-all">
+    <div class="max-w-7xl mx-auto">
         
-        <!-- Header & Toolbar -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
-            <div>
-                <h1 class="text-3xl font-bold text-slate-900">Laporan Transaksi</h1>
-                <p class="text-slate-500 mt-1 text-sm">Rekapitulasi lengkap pesanan masuk dan pendapatan.</p>
+        <!-- HEADER SECTION: Improved Layout -->
+        <div class="flex flex-col md:flex-row justify-between items-end md:items-center mb-10 gap-6">
+            
+            <!-- Left: Title -->
+            <div class="w-full md:w-auto">
+                <h1 class="text-3xl md:text-4xl font-extrabold text-slate-800 tracking-tight">Laporan Transaksi</h1>
+                <p class="text-slate-500 mt-2 text-base font-medium">Rekapitulasi lengkap pesanan masuk & pendapatan.</p>
             </div>
             
-            <div class="flex gap-3">
-                <!-- Search -->
-                <div class="relative">
-                    <input type="text" id="searchOrder" onkeyup="filterTable()" placeholder="Cari Nama / ID..." 
-                           class="pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none shadow-sm w-64">
-                    <i class="fas fa-search absolute left-3 top-2.5 text-slate-400 text-sm"></i>
+            <!-- Right: Action Tools (Search & Export Side-by-Side) -->
+            <div class="flex flex-col sm:flex-row w-full md:w-auto gap-3 items-stretch sm:items-center">
+                
+                <!-- Search Box -->
+                <div class="relative group w-full sm:w-72">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-slate-400 group-focus-within:text-primary-500 transition-colors"></i>
+                    </div>
+                    <input type="text" id="searchOrder" onkeyup="filterTable()" placeholder="Cari ID / Nama Pelanggan..." 
+                           class="block w-full pl-11 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent shadow-sm transition-all hover:border-slate-300">
                 </div>
                 
-                <!-- Create New Order Button -->
-                <button onclick="showCreateOrderModal()" class="bg-green-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-green-700 transition shadow-sm flex items-center gap-2 text-sm">
-                    <i class="fas fa-plus"></i> Pesanan Baru
-                </button>
-                
-                <!-- Export CSV -->
-                <a href="/api/orders/export-csv" class="bg-white border border-slate-300 text-slate-700 px-4 py-2 rounded-lg font-bold hover:bg-green-50 hover:text-green-700 hover:border-green-300 transition shadow-sm flex items-center gap-2 text-sm">
-                    <i class="fas fa-file-excel text-green-600"></i> Download CSV
+                <!-- Export Button -->
+                <a href="/api/orders/export" class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:text-emerald-600 hover:border-emerald-200 hover:bg-emerald-50 shadow-sm transition-all duration-200 group whitespace-nowrap">
+                    <i class="fas fa-file-excel text-emerald-500 text-lg group-hover:scale-110 transition-transform"></i>
+                    <span>Export Excel</span>
                 </a>
             </div>
         </div>
 
-        <!-- Tabel Card -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <!-- Metric Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+            <!-- Card Revenue -->
+            <div class="glass rounded-3xl p-8 relative overflow-hidden group border-l-4 border-primary-500 shadow-sm hover:shadow-lg transition-all">
+                <div class="absolute right-0 top-0 w-40 h-40 bg-gradient-to-br from-primary-500/10 to-transparent rounded-full -mr-10 -mt-10"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-primary-50 flex items-center justify-center text-primary-600">
+                            <i class="fas fa-wallet text-lg"></i>
+                        </div>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Pendapatan (Tampil)</p>
+                    </div>
+                    
+                    <h3 class="text-4xl font-extrabold text-slate-800 tracking-tight" id="displayedRevenue">Rp 0</h3>
+                    
+                    <div class="mt-4 flex items-center">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-primary-50 border border-primary-100 text-primary-700 text-xs font-bold shadow-sm">
+                            <i class="fas fa-filter"></i> Data Tabel
+                        </span>
+                        <span class="ml-3 text-xs font-medium text-slate-400">Total dari data yang difilter</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Total Orders -->
+            <div class="glass rounded-3xl p-8 relative overflow-hidden group border-l-4 border-purple-500 shadow-sm hover:shadow-lg transition-all">
+                <div class="absolute right-0 top-0 w-40 h-40 bg-gradient-to-br from-purple-500/10 to-transparent rounded-full -mr-10 -mt-10"></div>
+                <div class="relative z-10">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center text-purple-600">
+                            <i class="fas fa-shopping-bag text-lg"></i>
+                        </div>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">Total Pesanan</p>
+                    </div>
+
+                    <h3 class="text-4xl font-extrabold text-slate-800 tracking-tight" id="totalOrdersCount">0</h3>
+                    
+                    <div class="mt-4 text-xs font-medium text-slate-400 flex items-center gap-2">
+                        <i class="fas fa-info-circle"></i> Jumlah transaksi yang tercatat saat ini
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Section -->
+        <div class="glass rounded-3xl shadow-xl border border-white/50 overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm" id="orderTable">
-                    <thead class="bg-slate-50 text-slate-600 font-semibold border-b border-slate-200 uppercase text-xs tracking-wider">
+                    <thead class="bg-slate-50/90 backdrop-blur text-slate-600 font-bold border-b border-slate-200 uppercase text-xs tracking-wider">
                         <tr>
-                            <th class="px-6 py-4">ID Order</th>
-                            <th class="px-6 py-4">Pelanggan</th>
-                            <th class="px-6 py-4">Tanggal</th>
-                            <th class="px-6 py-4">Total Belanja</th>
-                            <th class="px-6 py-4">Status</th>
-                            <th class="px-6 py-4 text-right">Aksi</th>
+                            <th class="px-8 py-5 w-28">ID Order</th>
+                            <th class="px-8 py-5">Pelanggan</th>
+                            <th class="px-8 py-5">Tanggal</th>
+                            <th class="px-8 py-5">Total Belanja</th>
+                            <th class="px-8 py-5">Status</th>
+                            <th class="px-8 py-5 text-right">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-100 bg-white">
-                        <tr th:each="order : ${orders}" class="hover:bg-slate-50 transition-colors">
-                            <td class="px-6 py-4">
-                                <span class="font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded" th:text="'#' + ${order.id}">#1001</span>
+                    <tbody class="divide-y divide-gray-100 bg-white/60">
+                        <tr th:each="order : ${orders}" class="hover:bg-white transition-colors duration-200">
+                            <td class="px-8 py-5">
+                                <span class="font-mono font-bold text-primary-700 bg-primary-50 border border-primary-100 px-2.5 py-1 rounded-lg text-xs" th:text="'#' + ${order.id}">#1001</span>
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="font-medium text-slate-900" th:text="${order.customerName}">Nama Pelanggan</div>
+                            <td class="px-8 py-5">
+                                <div class="font-bold text-slate-800" th:text="${order.customerName}">Nama Pelanggan</div>
                             </td>
-                            <td class="px-6 py-4 text-slate-500">
-                                <i class="far fa-calendar mr-1"></i>
+                            <td class="px-8 py-5 text-slate-500 font-medium text-xs">
                                 <span th:text="${#temporals.format(order.orderDate, 'dd MMM yyyy')}"></span>
                             </td>
-                            <td class="px-6 py-4 font-bold text-slate-800" th:text="'Rp ' + ${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')}">Rp 0</td>
-                            <td class="px-6 py-4">
+                            <td class="px-8 py-5 font-bold text-slate-800 amount-col" 
+                                th:data-value="${order.totalAmount}"
+                                th:text="'Rp ' + ${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')}">Rp 0</td>
+                            <td class="px-8 py-5">
                                 <span th:class="${
-                                    order.status.name() == 'NEW' ? 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-700 border border-orange-200' :
-                                    order.status.name() == 'PROCESSING' ? 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200' :
-                                    order.status.name() == 'SHIPPED' ? 'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-700 border border-purple-200' :
-                                    'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200'
-                                }" th:text="${order.status}">STATUS</span>
+                                    order.status.name() == 'NEW' ? 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200 uppercase tracking-wide' :
+                                    order.status.name() == 'PROCESSING' ? 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200 uppercase tracking-wide' :
+                                    order.status.name() == 'SHIPPED' ? 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200 uppercase tracking-wide' :
+                                    'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase tracking-wide'
+                                }">
+                                    <span class="w-1.5 h-1.5 rounded-full" 
+                                          th:classappend="${
+                                            order.status.name() == 'NEW' ? 'bg-amber-500' :
+                                            order.status.name() == 'PROCESSING' ? 'bg-sky-500' :
+                                            order.status.name() == 'SHIPPED' ? 'bg-purple-500' : 'bg-emerald-500'
+                                          }"></span>
+                                    <span th:text="${order.status}">STATUS</span>
+                                </span>
                             </td>
-                            <td class="px-6 py-4 text-right">
+                            <td class="px-8 py-5 text-right">
                                 <button th:onclick="'showInvoice(' + ${order.id} + ')'" 
-                                        class="text-indigo-600 hover:text-indigo-800 font-bold text-xs uppercase tracking-wider border border-indigo-200 hover:bg-indigo-50 px-3 py-1 rounded transition">
-                                    Invoice
+                                        class="text-slate-500 hover:text-primary-600 hover:bg-primary-50 font-bold text-[10px] uppercase tracking-wider border border-slate-200 hover:border-primary-200 px-3 py-1.5 rounded-lg transition-all shadow-sm">
+                                    <i class="fas fa-file-invoice mr-1"></i> Invoice
                                 </button>
+                            </td>
+                        </tr>
+                        
+                        <!-- Empty State -->
+                        <tr id="noDataRow" class="hidden">
+                            <td colspan="6" class="px-8 py-16 text-center text-slate-400">
+                                <div class="flex flex-col items-center justify-center">
+                                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
+                                        <i class="fas fa-search text-2xl opacity-40"></i>
+                                    </div>
+                                    <p class="font-medium">Data tidak ditemukan</p>
+                                    <p class="text-xs mt-1">Coba kata kunci lain.</p>
+                                </div>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-        </div>
-    </main>
-
-    <!-- =========================== -->
-    <!-- MODAL CREATE ORDER (BARU) -->
-    <!-- =========================== -->
-    <div id="createOrderModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <!-- Backdrop -->
-        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onclick="closeCreateOrderModal()"></div>
-
-        <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all w-full max-w-4xl flex flex-col max-h-[90vh]">
-                
-                <!-- Header -->
-                <div class="bg-indigo-600 px-6 py-4 flex justify-between items-center text-white shrink-0">
-                    <h3 class="text-lg font-bold">Buat Pesanan Baru</h3>
-                    <button onclick="closeCreateOrderModal()" class="text-white hover:text-gray-200">
-                        <i class="fas fa-times text-xl"></i>
-                    </button>
-                </div>
-
-                <!-- Form Content -->
-                <div class="px-8 py-6 overflow-y-auto">
-                    <!-- Informasi Pelanggan -->
-                    <div class="mb-6">
-                        <h4 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Informasi Pelanggan</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    Nama Pelanggan <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" id="customerNameInput" required
-                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                                       placeholder="Masukkan nama pelanggan">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">
-                                    No. Telepon (Opsional)
-                                </label>
-                                <input type="tel" id="customerPhoneInput"
-                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
-                                       placeholder="0812-3456-7890">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Daftar Produk -->
-                    <div class="mb-6">
-                        <h4 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">Pilih Produk</h4>
-                        <div class="bg-gray-50 p-4 rounded-lg">
-                            <!-- Product Selection -->
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                                        Pilih Produk
-                                    </label>
-                                    <select id="productSelect" 
-                                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none appearance-none">
-                                        <option value="">-- Pilih Produk --</option>
-                                        <!-- Produk akan diisi via JavaScript -->
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                                        Jumlah
-                                    </label>
-                                    <input type="number" id="quantityInput" min="1" value="1"
-                                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
-                                </div>
-                            </div>
-                            <button onclick="addProductToOrder()" 
-                                    class="w-full bg-indigo-600 text-white py-2 rounded-lg font-bold hover:bg-indigo-700 transition flex items-center justify-center gap-2">
-                                <i class="fas fa-plus"></i> Tambah ke Keranjang
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Daftar Produk yang Dipilih -->
-                    <div class="mb-6">
-                        <h4 class="text-lg font-bold text-slate-800 mb-4">Produk yang Dipesan</h4>
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-left border-collapse">
-                                <thead class="bg-gray-100">
-                                    <tr>
-                                        <th class="px-4 py-3 text-sm font-medium text-gray-700">Produk</th>
-                                        <th class="px-4 py-3 text-sm font-medium text-gray-700 text-center">Harga</th>
-                                        <th class="px-4 py-3 text-sm font-medium text-gray-700 text-center">Jumlah</th>
-                                        <th class="px-4 py-3 text-sm font-medium text-gray-700 text-center">Subtotal</th>
-                                        <th class="px-4 py-3 text-sm font-medium text-gray-700 text-center">Aksi</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="selectedProductsTable">
-                                    <!-- Produk yang dipilih akan muncul di sini -->
-                                    <tr id="emptyCartMessage">
-                                        <td colspan="5" class="px-4 py-8 text-center text-gray-500">
-                                            <i class="fas fa-shopping-cart text-3xl mb-2 block"></i>
-                                            Belum ada produk yang dipilih
-                                        </td>
-                                    </tr>
-                                </tbody>
-                                <tfoot id="orderSummary" class="hidden">
-                                    <tr class="border-t-2 border-gray-300">
-                                        <td colspan="3" class="px-4 py-3 text-right font-bold">Total</td>
-                                        <td class="px-4 py-3 text-center font-bold text-lg text-indigo-600" id="totalAmount">Rp 0</td>
-                                        <td></td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Footer Buttons -->
-                <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex justify-between shrink-0">
-                    <button onclick="closeCreateOrderModal()" 
-                            class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition">
-                        Batal
-                    </button>
-                    <button onclick="submitOrder()" 
-                            class="px-4 py-2 bg-green-600 text-white rounded-lg font-bold hover:bg-green-700 transition flex items-center gap-2">
-                        <i class="fas fa-check"></i> Buat Pesanan
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- =========================== -->
-    <!-- MODAL DETAIL INVOICE (FIXED) -->
-    <!-- =========================== -->
-    <div id="invoiceModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <!-- Backdrop -->
-        <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" onclick="closeModal()"></div>
-
-        <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
             
-            <!-- Modal Panel: Max Height & Scroll Fix -->
-            <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-xl transition-all w-full max-w-lg flex flex-col max-h-[90vh]">
-                
-                <!-- 1. Header (Fixed) -->
-                <div class="bg-slate-900 px-6 py-4 flex justify-between items-center text-white no-print shrink-0">
-                    <h3 class="text-lg font-bold">Detail Invoice</h3>
-                    <button onclick="closeModal()" class="text-slate-400 hover:text-white transition modal-close-btn"><i class="fas fa-times text-xl"></i></button>
-                </div>
-
-                <!-- 2. Scrollable Content (Area yang diprint) -->
-                <div id="printableArea" class="px-8 py-6 overflow-y-auto">
-                    
-                    <!-- Print Header (Hanya muncul saat print) -->
-                    <div class="print-header hidden">
-                        <div class="print-logo">MINI E-COM STORE</div>
-                        <p class="text-xs">Jl. Teknologi No. 123, Jakarta</p>
-                    </div>
-
-                    <!-- Info Order -->
-                    <div class="flex justify-between border-b border-slate-200 pb-4 mb-4">
-                        <div>
-                            <p class="text-xs text-slate-500 uppercase font-bold">No. Invoice</p>
-                            <p class="text-xl font-mono font-bold text-slate-900" id="invId">#INV-000</p>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-xs text-slate-500 uppercase font-bold">Tanggal</p>
-                            <p class="text-sm font-medium text-slate-800" id="invDate">01 Jan 2024</p>
-                        </div>
-                    </div>
-
-                    <div class="mb-6">
-                        <p class="text-xs text-slate-500 uppercase font-bold mb-1">Kepada Yth.</p>
-                        <p class="text-lg font-bold text-slate-900" id="invCustomer">Nama Pelanggan</p>
-                        <div class="mt-2">
-                            <span class="inline-block px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-700 border border-green-200" id="invStatus">DONE</span>
-                        </div>
-                    </div>
-
-                    <!-- Table Items (Desain Struk) -->
-                    <div class="mb-6">
-                        <table class="w-full text-sm">
-                            <thead class="border-b-2 border-slate-800 text-slate-900 font-bold">
-                                <tr>
-                                    <th class="pb-2 text-left">Item</th>
-                                    <th class="pb-2 text-center">Qty</th>
-                                    <th class="pb-2 text-right">Harga</th>
-                                    <th class="pb-2 text-right">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody id="invItems" class="text-slate-700 divide-y divide-slate-100">
-                                <!-- Items Injected Here -->
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Grand Total -->
-                    <div class="flex flex-col items-end border-t-2 border-slate-800 pt-4">
-                        <p class="text-sm text-slate-500 font-medium">Total Pembayaran</p>
-                        <p class="text-3xl font-bold text-indigo-600" id="invTotal">Rp 0</p>
-                    </div>
-
-                    <!-- Footer Print -->
-                    <div class="mt-12 pt-4 border-t border-slate-200 text-center text-xs text-slate-400 hidden print:block">
-                        <p>Terima kasih telah berbelanja di Mini E-Com.</p>
-                        <p>Barang yang sudah dibeli tidak dapat ditukar.</p>
-                    </div>
-                </div>
-
-                <!-- 3. Footer Buttons (Fixed) -->
-                <div class="bg-gray-50 px-6 py-4 border-t border-gray-100 flex flex-row-reverse gap-3 no-print shrink-0 modal-footer">
-                    <button type="button" class="inline-flex justify-center rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-bold text-white shadow hover:bg-indigo-700 transition" onclick="window.print()">
-                        <i class="fas fa-print mr-2"></i> Cetak Invoice
-                    </button>
-                    <button type="button" class="inline-flex justify-center rounded-lg bg-white border border-gray-300 px-5 py-2.5 text-sm font-bold text-gray-700 shadow-sm hover:bg-gray-50 transition" onclick="closeModal()">
-                        Tutup
-                    </button>
+            <!-- Pagination Placeholder -->
+            <div class="bg-slate-50 px-8 py-4 border-t border-slate-200 flex justify-between items-center text-xs text-slate-500 font-medium">
+                <span>Menampilkan data terkini</span>
+                <div class="flex gap-2 opacity-50 cursor-not-allowed">
+                    <span class="px-3 py-1 bg-white border border-slate-200 rounded shadow-sm">Previous</span>
+                    <span class="px-3 py-1 bg-white border border-slate-200 rounded shadow-sm">Next</span>
                 </div>
             </div>
         </div>
     </div>
+</main>
 
-    <!-- SCRIPTS -->
-    <script>
-        // Variables untuk menyimpan data
-        let selectedProducts = [];
-        let allProducts = [];
-
-        function logout() {
-            Swal.fire({ 
-                title: 'Logout?', 
-                icon: 'warning', 
-                showCancelButton: true, 
-                confirmButtonColor: '#d33', 
-                confirmButtonText: 'Ya' 
-            }).then((result) => { 
-                if (result.isConfirmed) { 
-                    window.location.href = "/auth/logout"; 
-                } 
-            });
-        }
-
-        // Search Filter
-        function filterTable() {
-            const input = document.getElementById("searchOrder");
-            const filter = input.value.toUpperCase();
-            const table = document.getElementById("orderTable");
-            const tr = table.getElementsByTagName("tr");
-
-            for (let i = 0; i < tr.length; i++) {
-                const tdId = tr[i].getElementsByTagName("td")[0];
-                const tdName = tr[i].getElementsByTagName("td")[1];
-                
-                if (tdId || tdName) {
-                    const txtId = tdId.textContent || tdId.innerText;
-                    const txtName = tdName.textContent || tdName.innerText;
-                    if (txtId.toUpperCase().indexOf(filter) > -1 || txtName.toUpperCase().indexOf(filter) > -1) {
-                        tr[i].style.display = "";
-                    } else {
-                        tr[i].style.display = "none";
-                    }
-                }       
-            }
-        }
-
-        // Modal Logic untuk Invoice
-        function showInvoice(id) {
-            const modal = document.getElementById('invoiceModal');
-            modal.classList.remove('hidden');
-
-            fetch(`/api/orders/${id}/invoice`)
-            .then(response => response.json())
-            .then(res => {
-                if(res.status === 200) {
-                    const data = res.data;
-                    document.getElementById('invId').innerText = '#INV-' + data.id.toString().padStart(4, '0');
-                    document.getElementById('invCustomer').innerText = data.customerName;
-                    
-                    // Format date
-                    const date = new Date(data.orderDate);
-                    const formattedDate = date.toLocaleDateString('id-ID', {
-                        day: '2-digit',
-                        month: 'short',
-                        year: 'numeric'
-                    });
-                    document.getElementById('invDate').innerText = formattedDate;
-                    
-                    document.getElementById('invStatus').innerText = data.status;
-                    document.getElementById('invTotal').innerText = 'Rp ' + data.totalAmount.toLocaleString('id-ID');
-
-                    const tbody = document.getElementById('invItems');
-                    tbody.innerHTML = '';
-                    
-                    if (data.items && data.items.length > 0) {
-                        data.items.forEach(item => {
-                            tbody.innerHTML += `
-                                <tr>
-                                    <td class="py-3 text-left font-medium text-slate-800">${item.productName}</td>
-                                    <td class="py-3 text-center text-slate-500">${item.quantity}</td>
-                                    <td class="py-3 text-right text-slate-500">Rp ${item.pricePerItem ? item.pricePerItem.toLocaleString('id-ID') : '0'}</td>
-                                    <td class="py-3 text-right font-bold text-slate-900">Rp ${item.subtotal ? item.subtotal.toLocaleString('id-ID') : '0'}</td>
-                                </tr>
-                            `;
-                        });
-                    } else {
-                        tbody.innerHTML = `
-                            <tr>
-                                <td colspan="4" class="py-3 text-center text-slate-500">Tidak ada item</td>
+<!-- =========================== -->
+<!-- MODAL INVOICE (Tetap, tidak berubah fungsi) -->
+<!-- =========================== -->
+<div id="invoiceModal" class="fixed inset-0 z-[100] hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm transition-opacity modal-backdrop" onclick="closeModal()"></div>
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+        <div class="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-2xl transition-all w-full max-w-2xl flex flex-col max-h-[95vh]">
+            <!-- Header Modal -->
+            <div class="bg-slate-900 px-8 py-5 flex justify-between items-center text-white no-print shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-sky-400 shadow-inner">
+                        <i class="fas fa-file-invoice-dollar text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold">Detail Invoice</h3>
+                        <p class="text-xs text-slate-400">Pratinjau dokumen</p>
+                    </div>
+                </div>
+                <button onclick="closeModal()" class="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition"><i class="fas fa-times"></i></button>
+            </div>
+            <!-- Printable Area -->
+            <div id="printableArea" class="px-12 py-10 overflow-y-auto bg-white text-slate-800">
+                <!-- Header Invoice -->
+                <div class="flex justify-between items-start mb-10 pb-8 border-b-2 border-slate-800">
+                    <div>
+                        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight mb-1">MINI E-COM</h1>
+                        <p class="text-sm text-slate-500">Jl. Teknologi Digital No. 88, Jakarta</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm font-bold text-slate-400 uppercase tracking-widest">INVOICE</p>
+                        <p class="text-2xl font-mono font-bold text-slate-900 mt-1" id="invId">#INV-000</p>
+                    </div>
+                </div>
+                <!-- Info -->
+                <div class="flex justify-between mb-10">
+                    <div>
+                        <p class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-2">Ditagihkan Kepada</p>
+                        <p class="text-xl font-bold text-slate-900" id="invCustomer">LOADING...</p>
+                        <p class="text-sm text-slate-500 mt-1">Customer Regular</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-2">Tanggal</p>
+                        <p class="text-base font-medium text-slate-800" id="invDate">01 Jan 2024</p>
+                        <div class="mt-2"><span class="px-2 py-0.5 bg-slate-100 border border-slate-200 text-xs font-bold rounded text-slate-700" id="invStatus">DONE</span></div>
+                    </div>
+                </div>
+                <!-- Table -->
+                <div class="mb-8">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b-2 border-slate-800 text-slate-900 font-bold uppercase text-xs">
+                                <th class="py-3 text-left w-1/2">Deskripsi Item</th>
+                                <th class="py-3 text-center">Qty</th>
+                                <th class="py-3 text-right">Harga</th>
+                                <th class="py-3 text-right">Total</th>
                             </tr>
-                        `;
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error fetching invoice:', error);
-                Swal.fire('Error', 'Gagal memuat data invoice', 'error');
-            });
-        }
+                        </thead>
+                        <tbody id="invItems" class="text-slate-700 divide-y divide-slate-200"></tbody>
+                    </table>
+                </div>
+                <!-- Total -->
+                <div class="flex flex-col items-end pt-4 border-t border-slate-800">
+                    <div class="w-full md:w-1/2 space-y-2">
+                        <div class="flex justify-between items-center pt-2">
+                            <span class="text-slate-900 font-bold text-lg">Total Tagihan</span>
+                            <span class="text-2xl font-extrabold text-slate-900" id="invTotal">Rp 0</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-16 text-center text-xs text-slate-400"><p>Terima Kasih atas kepercayaan Anda!</p></div>
+            </div>
+            <!-- Footer -->
+            <div class="bg-gray-50 px-8 py-5 border-t border-gray-100 flex flex-row-reverse gap-3 no-print shrink-0 modal-footer">
+                <button type="button" class="inline-flex justify-center items-center rounded-xl bg-slate-900 px-6 py-3 text-sm font-bold text-white shadow-lg hover:bg-slate-800 hover:-translate-y-0.5 transition-all" onclick="printInvoice()"><i class="fas fa-print mr-2"></i> Cetak Invoice</button>
+                <button type="button" class="inline-flex justify-center items-center rounded-xl bg-white border border-gray-300 px-6 py-3 text-sm font-bold text-gray-700 shadow-sm hover:bg-gray-50 transition" onclick="closeModal()">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-        function closeModal() {
-            document.getElementById('invoiceModal').classList.add('hidden');
-        }
+<script>
+    function logout() {
+        Swal.fire({ title: 'Logout?', text: 'Sesi anda akan berakhir', icon: 'warning', showCancelButton: true, confirmButtonColor: '#e11d48', cancelButtonColor: '#64748b', confirmButtonText: 'Ya, Logout', customClass: { popup: 'rounded-3xl shadow-xl' } }).then((result) => { if (result.isConfirmed) { document.cookie = "AUTH_TOKEN=; path=/; max-age=0"; window.location.href = "/auth/logout"; } });
+    }
 
-        // ============ CREATE ORDER FUNCTIONS ============
-        
-        function showCreateOrderModal() {
-            const modal = document.getElementById('createOrderModal');
-            modal.classList.remove('hidden');
-            
-            // Reset form
-            document.getElementById('customerNameInput').value = '';
-            document.getElementById('customerPhoneInput').value = '';
-            selectedProducts = [];
-            updateSelectedProductsTable();
-            
-            // Load products
-            loadProducts();
-        }
+    document.addEventListener("DOMContentLoaded", function() { calculatePageMetrics(); });
 
-        function closeCreateOrderModal() {
-            document.getElementById('createOrderModal').classList.add('hidden');
-        }
-
-        function loadProducts() {
-            fetch('/api/products/active')
-                .then(response => response.json())
-                .then(data => {
-                    if (data.status === 200) {
-                        allProducts = data.data;
-                        const productSelect = document.getElementById('productSelect');
-                        productSelect.innerHTML = '<option value="">-- Pilih Produk --</option>';
-                        
-                        allProducts.forEach(product => {
-                            if (product.stock > 0) {
-                                const option = document.createElement('option');
-                                option.value = product.id;
-                                option.textContent = `${product.name} - Rp ${product.price.toLocaleString('id-ID')} (Stok: ${product.stock})`;
-                                option.setAttribute('data-price', product.price);
-                                option.setAttribute('data-stock', product.stock);
-                                productSelect.appendChild(option);
-                            }
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error loading products:', error);
-                    Swal.fire('Error', 'Gagal memuat data produk', 'error');
-                });
-        }
-
-        function addProductToOrder() {
-            const productSelect = document.getElementById('productSelect');
-            const quantityInput = document.getElementById('quantityInput');
-            
-            const productId = productSelect.value;
-            const quantity = parseInt(quantityInput.value);
-            
-            if (!productId) {
-                Swal.fire('Peringatan', 'Silakan pilih produk terlebih dahulu', 'warning');
-                return;
+    function calculatePageMetrics() {
+        const amountCells = document.querySelectorAll('.amount-col');
+        let totalRevenue = 0; let visibleCount = 0;
+        amountCells.forEach(td => {
+            if (td.closest('tr').style.display !== 'none') {
+                totalRevenue += parseFloat(td.getAttribute('data-value')) || 0;
+                visibleCount++;
             }
-            
-            if (quantity < 1) {
-                Swal.fire('Peringatan', 'Jumlah minimal 1', 'warning');
-                return;
-            }
-            
-            // Cari produk yang dipilih
-            const selectedOption = productSelect.options[productSelect.selectedIndex];
-            const productName = selectedOption.textContent.split(' - ')[0];
-            const price = parseFloat(selectedOption.getAttribute('data-price'));
-            const stock = parseInt(selectedOption.getAttribute('data-stock'));
-            
-            // Cek stok
-            if (quantity > stock) {
-                Swal.fire('Peringatan', `Stok tidak cukup. Stok tersedia: ${stock}`, 'warning');
-                return;
-            }
-            
-            // Cek apakah produk sudah ada di keranjang
-            const existingProductIndex = selectedProducts.findIndex(p => p.id === parseInt(productId));
-            
-            if (existingProductIndex > -1) {
-                // Update quantity jika sudah ada
-                const newQuantity = selectedProducts[existingProductIndex].quantity + quantity;
-                
-                if (newQuantity > stock) {
-                    Swal.fire('Peringatan', `Stok tidak cukup. Stok tersedia: ${stock}`, 'warning');
-                    return;
-                }
-                
-                selectedProducts[existingProductIndex].quantity = newQuantity;
-                selectedProducts[existingProductIndex].subtotal = price * newQuantity;
-            } else {
-                // Tambah produk baru
-                selectedProducts.push({
-                    id: parseInt(productId),
-                    name: productName,
-                    price: price,
-                    quantity: quantity,
-                    subtotal: price * quantity,
-                    stock: stock
-                });
-            }
-            
-            // Reset input
-            productSelect.value = '';
-            quantityInput.value = 1;
-            
-            // Update tabel
-            updateSelectedProductsTable();
-        }
-
-        function removeProductFromOrder(productId) {
-            selectedProducts = selectedProducts.filter(p => p.id !== productId);
-            updateSelectedProductsTable();
-        }
-
-        function updateSelectedProductsTable() {
-            const tableBody = document.getElementById('selectedProductsTable');
-            const emptyCartMessage = document.getElementById('emptyCartMessage');
-            const orderSummary = document.getElementById('orderSummary');
-            const totalAmountElement = document.getElementById('totalAmount');
-            
-            // Hitung total
-            let totalAmount = 0;
-            
-            if (selectedProducts.length === 0) {
-                // Tampilkan pesan keranjang kosong
-                emptyCartMessage.style.display = '';
-                orderSummary.classList.add('hidden');
-                tableBody.innerHTML = '';
-                tableBody.appendChild(emptyCartMessage);
-            } else {
-                // Sembunyikan pesan kosong
-                emptyCartMessage.style.display = 'none';
-                
-                // Generate rows untuk produk yang dipilih
-                tableBody.innerHTML = '';
-                
-                selectedProducts.forEach((product, index) => {
-                    totalAmount += product.subtotal;
-                    
-                    const row = document.createElement('tr');
-                    row.className = 'border-b border-gray-200 hover:bg-gray-50';
-                    row.innerHTML = `
-                        <td class="px-4 py-3">
-                            <div class="font-medium">${product.name}</div>
-                            <div class="text-sm text-gray-500">Rp ${product.price.toLocaleString('id-ID')} per item</div>
-                        </td>
-                        <td class="px-4 py-3 text-center">
-                            Rp ${product.price.toLocaleString('id-ID')}
-                        </td>
-                        <td class="px-4 py-3 text-center">
-                            <div class="flex items-center justify-center gap-2">
-                                <button onclick="updateProductQuantity(${product.id}, -1)" 
-                                        class="w-8 h-8 flex items-center justify-center bg-gray-200 rounded hover:bg-gray-300">
-                                    <i class="fas fa-minus text-xs"></i>
-                                </button>
-                                <span class="font-medium">${product.quantity}</span>
-                                <button onclick="updateProductQuantity(${product.id}, 1)" 
-                                        class="w-8 h-8 flex items-center justify-center bg-gray-200 rounded hover:bg-gray-300">
-                                    <i class="fas fa-plus text-xs"></i>
-                                </button>
-                            </div>
-                        </td>
-                        <td class="px-4 py-3 text-center font-bold">
-                            Rp ${product.subtotal.toLocaleString('id-ID')}
-                        </td>
-                        <td class="px-4 py-3 text-center">
-                            <button onclick="removeProductFromOrder(${product.id})" 
-                                    class="text-red-600 hover:text-red-800">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-                
-                // Tampilkan total
-                totalAmountElement.textContent = 'Rp ' + totalAmount.toLocaleString('id-ID');
-                orderSummary.classList.remove('hidden');
-            }
-        }
-
-        function updateProductQuantity(productId, change) {
-            const productIndex = selectedProducts.findIndex(p => p.id === productId);
-            
-            if (productIndex > -1) {
-                const product = selectedProducts[productIndex];
-                const newQuantity = product.quantity + change;
-                
-                if (newQuantity < 1) {
-                    removeProductFromOrder(productId);
-                    return;
-                }
-                
-                if (newQuantity > product.stock) {
-                    Swal.fire('Peringatan', `Stok tidak cukup. Stok tersedia: ${product.stock}`, 'warning');
-                    return;
-                }
-                
-                selectedProducts[productIndex].quantity = newQuantity;
-                selectedProducts[productIndex].subtotal = product.price * newQuantity;
-                updateSelectedProductsTable();
-            }
-        }
-
-        function submitOrder() {
-            const customerName = document.getElementById('customerNameInput').value.trim();
-            const customerPhone = document.getElementById('customerPhoneInput').value.trim();
-            
-            // Validasi
-            if (!customerName) {
-                Swal.fire('Peringatan', 'Nama pelanggan tidak boleh kosong', 'warning');
-                return;
-            }
-            
-            if (selectedProducts.length === 0) {
-                Swal.fire('Peringatan', 'Tambahkan minimal 1 produk', 'warning');
-                return;
-            }
-            
-            // Prepare data
-            const orderData = {
-                customerName: customerName,
-                customerPhone: customerPhone || null,
-                items: selectedProducts.map(product => ({
-                    productId: product.id,
-                    quantity: product.quantity
-                }))
-            };
-            
-            // Kirim ke API
-            fetch('/api/orders', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(orderData)
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 200) {
-                    Swal.fire({
-                        title: 'Berhasil!',
-                        text: 'Pesanan berhasil dibuat',
-                        icon: 'success',
-                        confirmButtonColor: '#4f46e5'
-                    }).then(() => {
-                        // Tutup modal dan refresh halaman
-                        closeCreateOrderModal();
-                        window.location.reload();
-                    });
-                } else {
-                    Swal.fire('Error', data.message || 'Gagal membuat pesanan', 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                Swal.fire('Error', 'Terjadi kesalahan saat membuat pesanan', 'error');
-            });
-        }
-
-        // Load products saat halaman pertama kali dimuat
-        document.addEventListener('DOMContentLoaded', function() {
-            // Anda bisa memuat produk awal di sini jika diperlukan
         });
-    </script>
+        document.getElementById('displayedRevenue').innerText = 'Rp ' + totalRevenue.toLocaleString('id-ID');
+        document.getElementById('totalOrdersCount').innerText = visibleCount;
+    }
+
+    function filterTable() {
+        const input = document.getElementById("searchOrder");
+        const filter = input.value.toUpperCase();
+        const tr = document.getElementById("orderTable").getElementsByTagName("tr");
+        let hasData = false;
+        for (let i = 1; i < tr.length; i++) {
+            if (tr[i].id === "noDataRow") continue;
+            const tdId = tr[i].getElementsByTagName("td")[0];
+            const tdName = tr[i].getElementsByTagName("td")[1];
+            if (tdId || tdName) {
+                if ((tdId.innerText + tdName.innerText).toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = ""; hasData = true;
+                } else { tr[i].style.display = "none"; }
+            }       
+        }
+        document.getElementById("noDataRow").classList.toggle("hidden", hasData);
+        calculatePageMetrics();
+    }
+
+    function showInvoice(id) {
+        const modal = document.getElementById('invoiceModal');
+        modal.classList.remove('hidden');
+        document.getElementById('invCustomer').innerText = 'Loading...';
+        document.getElementById('invItems').innerHTML = '<tr><td colspan="4" class="text-center py-8 text-slate-400">Loading...</td></tr>';
+        const token = document.cookie.split('; ').find(row => row.startsWith('AUTH_TOKEN=')).split('=')[1];
+        fetch(`/api/orders/${id}`, { headers: { 'Authorization': 'Bearer ' + token } })
+        .then(response => response.json())
+        .then(res => {
+            if(res.status === 200) {
+                const data = res.data;
+                document.getElementById('invId').innerText = '#INV-' + data.id;
+                document.getElementById('invCustomer').innerText = data.username || data.customerName || 'Pelanggan Umum';
+                document.getElementById('invDate').innerText = data.orderDate;
+                document.getElementById('invStatus').innerText = data.status;
+                const formattedTotal = 'Rp ' + data.totalAmount.toLocaleString('id-ID');
+                document.getElementById('invTotal').innerText = formattedTotal;
+                const tbody = document.getElementById('invItems');
+                tbody.innerHTML = '';
+                if(data.items && data.items.length > 0) {
+                    data.items.forEach(item => {
+                        tbody.innerHTML += `<tr class="hover:bg-slate-50 transition"><td class="py-4 text-left font-medium text-slate-900">${item.productName}</td><td class="py-4 text-center text-slate-600">${item.quantity}</td><td class="py-4 text-right text-slate-600">Rp ${item.pricePerItem.toLocaleString('id-ID')}</td><td class="py-4 text-right font-bold text-slate-900">Rp ${item.subtotal.toLocaleString('id-ID')}</td></tr>`;
+                    });
+                } else { tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-slate-500 italic">Tidak ada item</td></tr>'; }
+            }
+        });
+    }
+
+    function closeModal() { document.getElementById('invoiceModal').classList.add('hidden'); }
+    function printInvoice() { window.print(); }
+</script>
 </body>
 </html>

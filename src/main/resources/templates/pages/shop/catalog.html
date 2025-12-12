@@ -2,104 +2,276 @@
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Belanja - MiniShop</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Belanja - Mini E-Com</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1' },
+                        dark: { 700: '#1e293b', 800: '#1a2332', 900: '#0f172a' }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { 
+            background: linear-gradient(to bottom right, #f8fafc, #e2e8f0); 
+            background-attachment: fixed;
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        }
+
+        .product-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .product-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        /* Cart Animation */
+        .cart-enter { animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Shimmer Effect for Checkout Button */
+        .shimmer {
+            position: relative;
+            overflow: hidden;
+        }
+        .shimmer::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+            animation: shimmer 3s infinite;
+        }
+        @keyframes shimmer { 100% { left: 100%; } }
+    </style>
 </head>
-<body class="bg-gray-50 text-slate-800">
+<body class="text-slate-800 min-h-screen">
+
+    <!-- Background Blobs -->
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+        <div class="absolute top-0 left-0 w-[600px] h-[600px] bg-primary-500/10 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2"></div>
+        <div class="absolute bottom-0 right-0 w-[600px] h-[600px] bg-sky-500/10 rounded-full blur-[100px] translate-x-1/3 translate-y-1/3"></div>
+    </div>
 
     <!-- NAVBAR -->
-    <nav class="bg-white border-b border-gray-200 sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 bg-indigo-600 rounded flex items-center justify-center text-white"><i class="fas fa-shopping-bag"></i></div>
-                <span class="font-bold text-xl text-slate-900">MiniShop</span>
-            </div>
-            
-            <div class="flex items-center gap-4">
-                <a href="/shop/my-orders" class="text-sm font-medium text-slate-600 hover:text-indigo-600">Pesanan Saya</a>
-                
-                <!-- Cart Button -->
-                <button onclick="toggleCart()" class="relative p-2 text-slate-500 hover:text-indigo-600 transition">
-                    <i class="fas fa-shopping-cart text-xl"></i>
-                    <span id="cartBadge" class="hidden absolute top-0 right-0 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">0</span>
-                </button>
+    <nav class="glass sticky top-4 z-40 mx-4 mt-4 rounded-2xl">
+        <div class="max-w-7xl mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <!-- Logo -->
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-primary-600 flex items-center justify-center shadow-lg text-white transform hover:rotate-12 transition-transform duration-300">
+                        <i class="fas fa-crown text-lg"></i>
+                    </div>
+                    <div>
+                        <span class="font-extrabold text-xl tracking-tight text-slate-800">Mini E-Com</span>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Official Store</p>
+                    </div>
+                </div>
 
-                <div class="h-6 w-px bg-gray-300"></div>
-                
-                <div class="flex items-center gap-2">
-                    <span class="text-sm font-bold text-slate-700" th:text="${auth.fullName}">User</span>
-                    <button onclick="logout()" class="text-red-500 hover:text-red-700"><i class="fas fa-sign-out-alt"></i></button>
+                <!-- Right Actions -->
+                <div class="flex items-center gap-3">
+                    <!-- My Orders -->
+                    <a href="/shop/my-orders" class="hidden md:flex items-center gap-2 px-4 py-2 bg-white/50 hover:bg-white rounded-xl text-slate-600 hover:text-primary-600 font-bold text-sm border border-transparent hover:border-primary-100 transition-all shadow-sm group">
+                        <i class="fas fa-receipt text-primary-500 group-hover:scale-110 transition-transform"></i>
+                        <span>Pesanan Saya</span>
+                    </a>
+
+                    <!-- Mobile Order Icon -->
+                    <a href="/shop/my-orders" class="md:hidden w-10 h-10 flex items-center justify-center bg-white/50 rounded-xl text-slate-600">
+                        <i class="fas fa-receipt"></i>
+                    </a>
+                    
+                    <!-- Cart Button -->
+                    <button onclick="toggleCart()" class="relative w-10 h-10 bg-gradient-to-r from-primary-600 to-sky-500 rounded-xl text-white shadow-lg hover:shadow-primary-500/30 transition-all transform hover:-translate-y-0.5 group">
+                        <i class="fas fa-shopping-cart text-sm group-hover:scale-110 transition-transform"></i>
+                        <span id="cartBadge" class="hidden absolute -top-2 -right-2 w-5 h-5 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-sm border-2 border-white animate-bounce">0</span>
+                    </button>
+
+                    <div class="h-8 w-px bg-slate-200 mx-1"></div>
+                    
+                    <!-- Profile -->
+                    <div class="flex items-center gap-3 group">
+                        <div class="hidden lg:block text-right">
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Halo,</p>
+                            <p class="text-sm font-bold text-slate-800" th:text="${auth.fullName}">User Name</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 font-bold shadow-inner group-hover:bg-white transition-colors">
+                            <span th:text="${auth.fullName.substring(0,1).toUpperCase()}">U</span>
+                        </div>
+                        
+                        <button onclick="logout()" class="w-10 h-10 rounded-xl hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors flex items-center justify-center" title="Keluar">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- CONTENT -->
-    <main class="max-w-7xl mx-auto px-4 py-8">
-        <!-- Banner -->
-        <div class="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-white shadow-lg mb-8">
-            <h1 class="text-3xl font-bold mb-2">Mau cari apa hari ini?</h1>
-            <p class="text-indigo-100">Dapatkan produk berkualitas dengan harga terbaik.</p>
+    <!-- MAIN CONTENT -->
+    <main class="max-w-7xl mx-auto px-4 py-8 pb-20">
+        
+        <!-- Hero Banner -->
+        <div class="glass rounded-[2rem] p-8 md:p-12 mb-10 relative overflow-hidden group">
+            <div class="absolute right-0 top-0 w-64 h-64 bg-gradient-to-br from-primary-500/20 to-sky-300/20 rounded-full blur-3xl -mr-10 -mt-10 transition-transform group-hover:scale-110 duration-700"></div>
+            
+            <div class="relative z-10 max-w-2xl">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-100 text-amber-600 text-xs font-bold uppercase tracking-wider mb-4 shadow-sm">
+                    <i class="fas fa-fire"></i> Penawaran Spesial
+                </div>
+                <h1 class="text-3xl md:text-5xl font-extrabold text-slate-900 mb-4 tracking-tight leading-tight">
+                    Temukan Produk <br>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-sky-400">Favorit Anda Disini</span>
+                </h1>
+                <p class="text-slate-500 text-lg mb-8 font-medium">Kualitas terbaik dengan harga yang bersahabat. Gratis ongkir untuk pembelian hari ini!</p>
+                
+                <div class="flex gap-4">
+                    <div class="flex items-center gap-2 text-sm font-bold text-slate-600 bg-white/60 px-4 py-2 rounded-xl backdrop-blur-sm">
+                        <i class="fas fa-check-circle text-emerald-500"></i> Garansi Ori
+                    </div>
+                    <div class="flex items-center gap-2 text-sm font-bold text-slate-600 bg-white/60 px-4 py-2 rounded-xl backdrop-blur-sm">
+                        <i class="fas fa-check-circle text-emerald-500"></i> Gratis Ongkir
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <!-- Grid Produk -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div th:each="prod : ${products}" class="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition overflow-hidden group">
-                <div class="h-48 bg-gray-100 relative">
-                    <img th:if="${prod.image}" th:src="@{'/uploads/' + ${prod.image}}" class="w-full h-full object-cover">
-                    <div th:unless="${prod.image}" class="w-full h-full flex items-center justify-center text-slate-300"><i class="fas fa-image text-3xl"></i></div>
-                    <span class="absolute top-2 right-2 bg-white/90 backdrop-blur px-2 py-1 rounded text-xs font-bold text-slate-700" th:text="${prod.stock} + ' stok'"></span>
+        <!-- Product Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+            <div th:each="prod : ${products}" class="product-card glass rounded-3xl overflow-hidden group border border-white/50 hover:border-primary-200">
+                <!-- Image Container -->
+                <div class="h-64 bg-slate-50 relative overflow-hidden">
+                    <img th:if="${prod.image}" th:src="@{'/uploads/' + ${prod.image}}" class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500">
+                    <div th:unless="${prod.image}" class="w-full h-full flex items-center justify-center text-slate-300 bg-slate-100">
+                        <i class="fas fa-camera text-4xl opacity-50"></i>
+                    </div>
+                    
+                    <!-- Badges -->
+                    <div class="absolute top-4 left-4">
+                        <span class="px-3 py-1.5 bg-white/90 backdrop-blur rounded-lg text-xs font-bold text-slate-700 shadow-sm uppercase tracking-wide border border-white/50" th:text="${prod.category}">KATEGORI</span>
+                    </div>
+                    <div class="absolute top-4 right-4">
+                        <span class="px-3 py-1.5 bg-slate-900/80 backdrop-blur rounded-lg text-xs font-bold text-white shadow-sm flex items-center gap-1.5">
+                            <i class="fas fa-box text-sky-400"></i>
+                            <span th:text="${prod.stock}">0</span>
+                        </span>
+                    </div>
                 </div>
                 
-                <div class="p-4">
-                    <p class="text-xs text-indigo-600 font-bold uppercase mb-1" th:text="${prod.category}">Kategori</p>
-                    <h3 class="font-bold text-slate-900 mb-3 truncate" th:text="${prod.name}">Produk</h3>
+                <!-- Info -->
+                <div class="p-6">
+                    <h3 class="font-bold text-lg text-slate-800 mb-2 line-clamp-2 min-h-[3.5rem]" th:text="${prod.name}">Product Name</h3>
                     
-                    <div class="flex items-center justify-between">
-                        <span class="text-lg font-bold text-slate-800" th:text="'Rp ' + ${#numbers.formatDecimal(prod.price, 0, 'COMMA', 0, 'POINT')}">Rp 0</span>
+                    <div class="flex items-end justify-between mt-4">
+                        <div>
+                            <p class="text-xs text-slate-400 font-bold uppercase mb-1">Harga</p>
+                            <p class="text-xl font-extrabold text-primary-600" th:text="'Rp ' + ${#numbers.formatDecimal(prod.price, 0, 'COMMA', 0, 'POINT')}">Rp 0</p>
+                        </div>
                         
-                        <!-- Add to Cart Button -->
                         <button th:if="${prod.stock > 0}"
                                 th:onclick="addToCart([[${prod.id}]], [[${prod.name}]], [[${prod.price}]], [[${prod.stock}]])"
-                                class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-600 hover:text-white transition">
-                            <i class="fas fa-plus"></i>
+                                class="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center shadow-lg hover:bg-primary-600 hover:scale-110 hover:shadow-primary-500/30 transition-all duration-300 group/btn">
+                            <i class="fas fa-plus text-lg group-hover/btn:rotate-90 transition-transform"></i>
                         </button>
-                        <span th:if="${prod.stock == 0}" class="text-xs text-red-500 font-bold">Habis</span>
+                        
+                        <span th:if="${prod.stock == 0}" class="px-3 py-1.5 bg-slate-100 text-slate-400 rounded-lg text-xs font-bold border border-slate-200 cursor-not-allowed">
+                            Stok Habis
+                        </span>
                     </div>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- SIDEBAR CART -->
-    <div id="cartSidebar" class="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-2xl z-50 transform translate-x-full transition-transform duration-300 flex flex-col">
-        <div class="p-4 border-b flex justify-between items-center bg-gray-50">
-            <h2 class="font-bold text-lg"><i class="fas fa-shopping-basket mr-2 text-indigo-600"></i>Keranjang</h2>
-            <button onclick="toggleCart()" class="text-gray-400 hover:text-red-500"><i class="fas fa-times text-xl"></i></button>
+    <!-- SHOPPING CART SIDEBAR -->
+    <div id="cartSidebar" class="fixed inset-y-0 right-0 w-full sm:w-[450px] glass shadow-2xl z-50 transform translate-x-full transition-transform duration-500 ease-[cubic-bezier(0.32,0.72,0,1)] flex flex-col border-l border-white/40">
+        <!-- Header -->
+        <div class="p-6 border-b border-slate-200/50 bg-white/50 backdrop-blur-md">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-primary-50 text-primary-600 flex items-center justify-center">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-lg text-slate-800">Keranjang Belanja</h2>
+                        <p class="text-xs text-slate-500 font-medium"><span id="cartCount">0</span> Item dipilih</p>
+                    </div>
+                </div>
+                <button onclick="toggleCart()" class="w-8 h-8 rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition flex items-center justify-center">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
         </div>
         
-        <div id="cartItems" class="flex-1 overflow-y-auto p-4 space-y-4">
-            <!-- Items injected by JS -->
-            <div class="text-center text-gray-400 mt-10">Keranjang kosong</div>
+        <!-- Cart Items -->
+        <div id="cartItems" class="flex-1 overflow-y-auto p-6 space-y-4 bg-white/30">
+            <!-- Items injected via JS -->
         </div>
 
-        <div class="p-4 border-t bg-gray-50">
-            <div class="flex justify-between font-bold text-lg mb-4">
-                <span>Total</span>
-                <span id="cartTotal">Rp 0</span>
+        <!-- Footer -->
+        <div class="p-6 border-t border-slate-200/50 bg-white/80 backdrop-blur-md">
+            <!-- Promo Code -->
+            <div class="flex gap-2 mb-6">
+                <input type="text" placeholder="Kode Promo" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all">
+                <button class="px-4 py-2.5 bg-slate-200 text-slate-600 font-bold text-sm rounded-xl hover:bg-slate-300 transition-colors">Gunakan</button>
             </div>
-            <button onclick="checkout()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-bold transition shadow-lg shadow-indigo-200">
-                Checkout Sekarang
+
+            <!-- Totals -->
+            <div class="space-y-2 mb-6">
+                <div class="flex justify-between text-sm">
+                    <span class="text-slate-500 font-medium">Subtotal</span>
+                    <span id="cartSubtotal" class="font-bold text-slate-800">Rp 0</span>
+                </div>
+                <div class="flex justify-between text-sm">
+                    <span class="text-slate-500 font-medium">Diskon Ongkir</span>
+                    <span class="font-bold text-emerald-600">-Rp 15.000</span>
+                </div>
+                <div class="flex justify-between items-end pt-4 border-t border-slate-100">
+                    <span class="text-base font-bold text-slate-800">Total Pembayaran</span>
+                    <span id="cartTotal" class="text-2xl font-extrabold text-primary-600">Rp 0</span>
+                </div>
+            </div>
+
+            <!-- Checkout Button -->
+            <button onclick="checkout()" class="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 shimmer group">
+                <span>Checkout Sekarang</span>
+                <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
             </button>
         </div>
     </div>
     
     <!-- Overlay -->
-    <div id="overlay" onclick="toggleCart()" class="fixed inset-0 bg-black/50 z-40 hidden transition-opacity"></div>
+    <div id="overlay" onclick="toggleCart()" class="fixed inset-0 bg-slate-900/20 backdrop-blur-[2px] z-40 hidden transition-opacity duration-300"></div>
 
     <!-- JAVASCRIPT -->
     <script th:inline="javascript">
@@ -110,7 +282,13 @@
             const item = cart.find(i => i.productId === id);
             if (item) {
                 if(item.quantity >= maxStock) {
-                    Swal.fire('Stok Habis', 'Maksimal stok tercapai', 'warning');
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Stok Terbatas',
+                        text: 'Maksimal stok produk ini telah tercapai.',
+                        confirmButtonColor: '#0ea5e9',
+                        customClass: { popup: 'rounded-3xl' }
+                    });
                     return;
                 }
                 item.quantity++;
@@ -119,26 +297,64 @@
             }
             renderCart();
             
-            // Auto open cart
+            // Auto open with visual feedback
             const sidebar = document.getElementById('cartSidebar');
-            if (sidebar.classList.contains('translate-x-full')) toggleCart();
+            if (sidebar.classList.contains('translate-x-full')) {
+                toggleCart();
+                const Toast = Swal.mixin({
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2000,
+                    timerProgressBar: true,
+                    background: '#ffffff',
+                    color: '#1e293b'
+                });
+                Toast.fire({ icon: 'success', title: 'Produk ditambahkan!' });
+            }
         }
 
         function updateQty(index, delta) {
             const item = cart[index];
             const newQty = item.quantity + delta;
             
-            if (newQty <= 0) cart.splice(index, 1);
-            else if (newQty > item.maxStock) Swal.fire('Limit', 'Stok tidak cukup', 'warning');
-            else item.quantity = newQty;
-            
-            renderCart();
+            if (newQty <= 0) {
+                Swal.fire({
+                    title: 'Hapus item?',
+                    text: item.name + " akan dihapus dari keranjang.",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#94a3b8',
+                    confirmButtonText: 'Ya, Hapus',
+                    cancelButtonText: 'Batal',
+                    customClass: { popup: 'rounded-3xl' }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        cart.splice(index, 1);
+                        renderCart();
+                    }
+                });
+            } else if (newQty > item.maxStock) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Stok Maksimal',
+                    text: `Hanya tersisa ${item.maxStock} item untuk produk ini.`,
+                    confirmButtonColor: '#0ea5e9',
+                    customClass: { popup: 'rounded-3xl' }
+                });
+            } else {
+                item.quantity = newQty;
+                renderCart();
+            }
         }
 
         function renderCart() {
             const container = document.getElementById('cartItems');
             const totalEl = document.getElementById('cartTotal');
+            const subtotalEl = document.getElementById('cartSubtotal');
             const badge = document.getElementById('cartBadge');
+            const countEl = document.getElementById('cartCount');
             
             let total = 0;
             let count = 0;
@@ -150,25 +366,50 @@
                 count += item.quantity;
 
                 html += `
-                    <div class="flex justify-between items-center bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
-                        <div class="flex-1">
-                            <h4 class="font-bold text-sm text-slate-800 line-clamp-1">${item.name}</h4>
-                            <p class="text-xs text-slate-500">@ Rp ${item.price.toLocaleString('id-ID')}</p>
+                    <div class="cart-enter bg-white/60 backdrop-blur-md p-4 rounded-2xl border border-white shadow-sm hover:shadow-md transition group">
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex-1 pr-3">
+                                <h4 class="font-bold text-slate-800 line-clamp-2 text-sm leading-snug">${item.name}</h4>
+                                <p class="text-xs text-slate-500 font-medium mt-1">@ Rp ${item.price.toLocaleString('id-ID')}</p>
+                            </div>
+                            <button onclick="updateQty(${index}, -1000)" class="text-slate-300 hover:text-rose-500 transition px-1">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <div class="flex items-center border rounded-lg">
-                                <button onclick="updateQty(${index}, -1)" class="px-2 py-1 text-slate-500 hover:bg-gray-100">-</button>
-                                <span class="text-sm font-bold w-4 text-center">${item.quantity}</span>
-                                <button onclick="updateQty(${index}, 1)" class="px-2 py-1 text-slate-500 hover:bg-gray-100">+</button>
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center bg-white rounded-lg shadow-sm border border-slate-200 h-8">
+                                <button onclick="updateQty(${index}, -1)" class="w-8 h-full text-slate-500 hover:bg-slate-50 hover:text-primary-600 rounded-l-lg transition font-bold">−</button>
+                                <span class="w-8 text-center text-xs font-bold text-slate-800">${item.quantity}</span>
+                                <button onclick="updateQty(${index}, 1)" class="w-8 h-full text-slate-500 hover:bg-slate-50 hover:text-primary-600 rounded-r-lg transition font-bold">+</button>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-extrabold text-primary-600">
+                                    Rp ${subtotal.toLocaleString('id-ID')}
+                                </p>
                             </div>
                         </div>
                     </div>
                 `;
             });
 
-            container.innerHTML = cart.length ? html : '<div class="text-center text-gray-400 mt-10">Keranjang kosong</div>';
-            totalEl.innerText = 'Rp ' + total.toLocaleString('id-ID');
+            container.innerHTML = cart.length ? html : `
+                <div class="flex flex-col items-center justify-center h-full text-slate-400 py-10">
+                    <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-shopping-basket text-3xl opacity-30"></i>
+                    </div>
+                    <p class="font-bold text-slate-600">Keranjang Kosong</p>
+                    <p class="text-xs mt-1">Belum ada item yang dipilih.</p>
+                </div>
+            `;
+            
+            const formattedTotal = 'Rp ' + Math.max(0, total - 15000).toLocaleString('id-ID'); // Simulasi diskon
+            const rawTotal = 'Rp ' + total.toLocaleString('id-ID');
+            
+            subtotalEl.innerText = rawTotal;
+            totalEl.innerText = cart.length > 0 ? formattedTotal : 'Rp 0';
+            
             badge.innerText = count;
+            countEl.innerText = count;
             badge.classList.toggle('hidden', count === 0);
         }
 
@@ -180,153 +421,89 @@
         }
 
         function checkout() {
-    if (cart.length === 0) {
-        Swal.fire({
-            icon: 'info',
-            title: 'Keranjang Kosong',
-            text: 'Tambahkan produk terlebih dahulu sebelum checkout',
-            confirmButtonColor: '#4F46E5'
-        });
-        return;
-    }
-
-    // Validasi stok sebelum checkout
-    let stockValid = true;
-    let stockError = '';
-    
-    cart.forEach(item => {
-        if (item.quantity > item.maxStock) {
-            stockValid = false;
-            stockError = `${item.name} hanya tersedia ${item.maxStock} stok`;
-        }
-    });
-    
-    if (!stockValid) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Stok Tidak Cukup',
-            text: stockError,
-            confirmButtonColor: '#F59E0B'
-        });
-        return;
-    }
-
-    // Show checkout confirmation
-    Swal.fire({
-        title: 'Konfirmasi Checkout',
-        html: `
-            <div class="text-left">
-                <p class="mb-2">Anda akan membeli:</p>
-                <ul class="list-disc pl-4 mb-3">
-                    ${cart.map(item => 
-                        `<li>${item.name} (${item.quantity}x)</li>`
-                    ).join('')}
-                </ul>
-                <p class="font-bold">Total: Rp ${cart.reduce((sum, item) => sum + (item.price * item.quantity), 0).toLocaleString('id-ID')}</p>
-            </div>
-        `,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#4F46E5',
-        cancelButtonColor: '#64748b',
-        confirmButtonText: 'Ya, Checkout',
-        cancelButtonText: 'Batal',
-        reverseButtons: true,
-        showLoaderOnConfirm: true,
-        preConfirm: async () => {
-            try {
-                // Payload sesuai DTO OrderRequestDto
-                const payload = {
-                    customerName: userName,
-                    items: cart.map(i => ({ 
-                        productId: i.productId, 
-                        quantity: i.quantity 
-                    }))
-                };
-
-                const token = document.cookie.split('; ').find(row => row.startsWith('AUTH_TOKEN='))?.split('=')[1] || '';
-
-                const response = await fetch('/api/orders', {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json', 
-                        'Authorization': token ? `Bearer ${token}` : '' 
-                    },
-                    body: JSON.stringify(payload)
+            if (cart.length === 0) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Keranjang Kosong',
+                    text: 'Silakan pilih produk terlebih dahulu.',
+                    confirmButtonColor: '#0ea5e9',
+                    customClass: { popup: 'rounded-3xl' }
                 });
-
-                const data = await response.json();
-                
-                if (!response.ok) {
-                    throw new Error(data.message || 'Terjadi kesalahan saat checkout');
-                }
-                
-                return data;
-            } catch (error) {
-                Swal.showValidationMessage(`Error: ${error.message}`);
-                return false;
+                return;
             }
-        },
-        allowOutsideClick: () => !Swal.isLoading()
-    }).then((result) => {
-        if (result.isConfirmed && result.value) {
-            // Kosongkan keranjang
-            cart = [];
-            renderCart();
-            toggleCart();
-            
-            // Tampilkan sukses
-            Swal.fire({
-                icon: 'success',
-                title: 'Checkout Berhasil!',
-                html: `
-                    <div class="text-center">
-                        <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
-                            <i class="fas fa-check text-green-600 text-2xl"></i>
-                        </div>
-                        <p class="mb-2">Pesanan Anda telah berhasil dibuat</p>
-                        <p class="text-sm text-gray-500">ID Pesanan: #${result.value.data?.id || '0000'}</p>
-                    </div>
-                `,
-                confirmButtonColor: '#10B981',
-                confirmButtonText: 'Lihat Pesanan Saya'
-            }).then(() => {
-                window.location.href = '/shop/my-orders';
+
+            Swal.fire({ 
+                title: 'Memproses Pesanan', 
+                html: '<div class="text-sm text-slate-500 mt-2">Mohon tunggu, sistem sedang membuat invoice...</div>',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading(),
+                customClass: { popup: 'rounded-3xl' }
+            });
+
+            const payload = {
+                customerName: userName,
+                items: cart.map(i => ({ productId: i.productId, quantity: i.quantity }))
+            };
+
+            const token = document.cookie.split('; ').find(row => row.startsWith('AUTH_TOKEN=')).split('=')[1];
+
+            fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify(payload)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.status === 200) {
+                    cart = []; 
+                    renderCart(); 
+                    toggleCart();
+                    Swal.fire({
+                        icon: 'success', 
+                        title: 'Pesanan Berhasil!', 
+                        text: 'Terima kasih telah berbelanja di Mini E-Com.',
+                        confirmButtonColor: '#0ea5e9',
+                        confirmButtonText: 'Lihat Pesanan',
+                        customClass: { popup: 'rounded-3xl' }
+                    }).then(() => window.location.href = '/shop/my-orders');
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal',
+                        text: data.message,
+                        confirmButtonColor: '#0ea5e9',
+                        customClass: { popup: 'rounded-3xl' }
+                    });
+                }
+            })
+            .catch(err => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Kesalahan Sistem',
+                    text: 'Silakan coba lagi beberapa saat lagi.',
+                    confirmButtonColor: '#0ea5e9',
+                    customClass: { popup: 'rounded-3xl' }
+                });
             });
         }
-    });
-}
 
         function logout() {
             Swal.fire({
-                title: 'Keluar dari MiniShop?',
-                text: "Keranjang belanja Anda mungkin tersimpan.",
+                title: 'Ingin Keluar?',
+                text: "Sesi belanja Anda akan diakhiri.",
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#ef4444', // Red
-                cancelButtonColor: '#64748b',  // Slate
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8',
                 confirmButtonText: 'Ya, Keluar',
                 cancelButtonText: 'Batal',
-                reverseButtons: true
+                reverseButtons: true,
+                customClass: { popup: 'rounded-3xl shadow-xl' }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Animasi Loading
-                    Swal.fire({
-                        title: 'Sedang keluar...',
-                        html: 'Terima kasih telah berbelanja!',
-                        timer: 1000,
-                        timerProgressBar: true,
-                        didOpen: () => {
-                            Swal.showLoading();
-                        }
-                    }).then(() => {
-                        // Hapus Sesi
-                        document.cookie = "AUTH_TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-                        localStorage.removeItem('token');
-                        
-                        // Redirect ke Server Logout
-                        window.location.href = "/auth/logout";
-                    });
+                    document.cookie = "AUTH_TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                    localStorage.removeItem('token');
+                    window.location.href = "/auth/logout";
                 }
             });
         }

@@ -7,125 +7,136 @@
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    <!-- Konfigurasi Tema Tailwind -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        primary: { 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1' }
-                    },
-                    fontFamily: { 'inter': ['Inter', 'sans-serif'] }
+                        primary: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1' },
+                        dark: { 700: '#1e293b', 800: '#1a2332', 900: '#0f172a' }
+                    }
                 }
             }
         }
     </script>
-</head>
-<body class="font-inter bg-gray-50 h-screen flex items-center justify-center">
 
-    <div class="flex w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden m-4 h-[600px] animate-fade-in-up">
+    <style>
+        body { background: linear-gradient(to bottom right, #f8fafc, #e2e8f0); }
+        .glass { 
+            background: rgba(255, 255, 255, 0.75); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid rgba(255, 255, 255, 0.6); 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); 
+        }
+        /* Input Animation */
+        input:focus ~ i { color: #0ea5e9; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden font-sans text-slate-800">
+
+    <!-- Dekorasi Background (Sama dengan tema lainnya) -->
+    <div class="absolute top-0 left-0 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+    <div class="absolute bottom-0 right-0 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+
+    <!-- Main Card -->
+    <div class="glass w-full max-w-md rounded-3xl p-8 md:p-10 relative z-10 animate-fade-in-up">
         
-        <!-- Bagian Kiri: Gambar/Info -->
-        <div class="hidden md:flex md:w-1/2 bg-gradient-to-br from-primary-600 to-blue-800 text-white p-10 flex-col justify-between relative overflow-hidden">
-            <div class="relative z-10">
-                <div class="flex items-center space-x-2 mb-8">
-                    <div class="w-8 h-8 rounded bg-white/20 flex items-center justify-center">
-                        <i class="fas fa-box text-white"></i>
-                    </div>
-                    <span class="text-xl font-bold">Mini E-Com</span>
-                </div>
-                <h2 class="text-3xl font-bold mb-4">Selamat Datang Kembali!</h2>
-                <p class="text-blue-100">Kelola bisnis Anda dengan lebih cerdas dan efisien dalam satu dashboard terintegrasi.</p>
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-primary-600 to-sky-500 text-white shadow-lg mb-4 transform hover:scale-110 transition-transform duration-300">
+                <i class="fas fa-crown text-2xl"></i>
             </div>
-            
-            <!-- Hiasan Background -->
-            <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
-            <div class="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -ml-16 -mb-16"></div>
-            
-            <div class="relative z-10 text-sm text-blue-200">
-                &copy; 2024 Mini E-Commerce App
-            </div>
+            <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight">Selamat Datang</h2>
+            <p class="text-slate-500 text-sm mt-2 font-medium">Masuk untuk mengelola toko Anda.</p>
         </div>
 
-        <!-- Bagian Kanan: Form Login -->
-        <div class="w-full md:w-1/2 p-10 flex flex-col justify-center">
-            <div class="text-center md:text-left mb-8">
-                <h3 class="text-2xl font-bold text-gray-800 mb-2">Masuk ke Akun</h3>
-                <p class="text-gray-500 text-sm">Silakan masukkan detail akun Anda untuk melanjutkan.</p>
-            </div>
-
-            <form id="loginForm" class="space-y-5">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Username</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                            <i class="far fa-user"></i>
-                        </span>
-                        <input type="text" id="username" required 
-                               class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
-                               placeholder="Masukkan username Anda">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
-                            <i class="fas fa-lock"></i>
-                        </span>
-                        <input type="password" id="password" required 
-                               class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-colors"
-                               placeholder="••••••••">
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-between text-sm">
-                    <label class="flex items-center text-gray-600 cursor-pointer">
-                        <input type="checkbox" class="w-4 h-4 rounded text-primary-600 border-gray-300 focus:ring-primary-500 mr-2">
-                        Ingat saya
-                    </label>
-                    <a href="#" class="text-primary-600 hover:text-primary-700 font-medium">Lupa password?</a>
-                </div>
-
-                <button type="submit" id="btnLogin"
-                        class="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5 flex justify-center items-center">
-                    Masuk Sekarang
-                </button>
-            </form>
-
-            <div class="mt-8 text-center text-sm text-gray-600">
-                Belum punya akun? 
-                <a href="/auth/register" class="text-primary-600 hover:text-primary-700 font-bold">Daftar Gratis</a>
-            </div>
+        <!-- Form Login -->
+        <form id="loginForm" class="space-y-6">
             
-             <div class="mt-6 text-center">
-                 <a href="/" class="text-gray-400 hover:text-gray-600 text-sm flex items-center justify-center gap-2 hover:underline">
-                     <i class="fas fa-arrow-left"></i> Kembali ke Beranda
-                 </a>
+            <!-- Username Input -->
+            <div class="space-y-1">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Username</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="far fa-user text-slate-400 transition-colors group-focus-within:text-primary-500"></i>
+                    </div>
+                    <input type="text" id="username" required placeholder="Masukkan username"
+                           class="block w-full pl-11 pr-4 py-3.5 bg-white/60 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all shadow-sm hover:bg-white">
+                </div>
+            </div>
+
+            <!-- Password Input -->
+            <div class="space-y-1">
+                <div class="flex justify-between items-center ml-1">
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Password</label>
+                    <a href="#" class="text-xs font-bold text-primary-600 hover:text-primary-700 hover:underline">Lupa password?</a>
+                </div>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fas fa-lock text-slate-400 transition-colors group-focus-within:text-primary-500"></i>
+                    </div>
+                    <input type="password" id="password" required placeholder="••••••••"
+                           class="block w-full pl-11 pr-4 py-3.5 bg-white/60 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all shadow-sm hover:bg-white">
+                </div>
+            </div>
+
+            <!-- Remember Me -->
+            <div class="flex items-center">
+                <input id="remember-me" type="checkbox" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded cursor-pointer">
+                <label for="remember-me" class="ml-2 block text-sm text-slate-600 cursor-pointer select-none">Ingat saya di perangkat ini</label>
+            </div>
+
+            <!-- Button -->
+            <button type="submit" id="btnLogin"
+                    class="w-full py-3.5 bg-gradient-to-r from-primary-600 to-sky-500 hover:from-primary-700 hover:to-sky-600 text-white rounded-xl font-bold shadow-lg hover:shadow-primary-500/30 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 text-sm">
+                <span>Masuk Sekarang</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </form>
+
+        <!-- Footer Link -->
+        <div class="mt-8 text-center space-y-4">
+            <p class="text-sm font-medium text-slate-500">
+                Belum punya akun? 
+                <a href="/auth/register" class="text-primary-600 hover:text-primary-700 font-bold hover:underline transition-all">Daftar Gratis</a>
+            </p>
+            <div>
+                <a href="/" class="inline-flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors">
+                    <i class="fas fa-home"></i> Kembali ke Beranda
+                </a>
             </div>
         </div>
     </div>
 
-    <!-- Script Logic Login (AJAX + JWT + Routing) -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Script Logic -->
     <script>
+        // Custom SweetAlert Styling agar sesuai tema
+        const swalCustom = Swal.mixin({
+            customClass: {
+                popup: 'rounded-3xl shadow-xl font-sans',
+                confirmButton: 'bg-primary-600 text-white font-bold py-2 px-4 rounded-xl hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500'
+            },
+            buttonsStyling: false
+        });
+
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const btn = document.getElementById('btnLogin');
-            const originalText = 'Masuk Sekarang';
+            const originalContent = btn.innerHTML;
 
-            // Efek Loading pada Tombol
-            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin mr-2"></i> Memproses...';
+            // Loading State
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> <span class="ml-2">Memproses...</span>';
             btn.disabled = true;
             btn.classList.add('opacity-75', 'cursor-not-allowed');
 
@@ -137,31 +148,29 @@
             .then(response => response.json())
             .then(res => {
                 if (res.status === 200) {
-                    // 1. Simpan Token di Cookie (Agar Backend/Thymeleaf bisa baca)
-                    document.cookie = `AUTH_TOKEN=${res.data.token}; path=/; max-age=86400`; // 24 Jam
-                    
-                    // 2. Simpan di LocalStorage (Untuk Fetch API di Frontend)
+                    // 1. Simpan Token
+                    document.cookie = `AUTH_TOKEN=${res.data.token}; path=/; max-age=86400`;
                     localStorage.setItem('token', res.data.token);
 
-                    const role = res.data.role; // Ambil role dari response backend
+                    const role = res.data.role;
 
+                    // 2. Notifikasi Sukses
                     const Toast = Swal.mixin({
                         toast: true,
                         position: 'top-end',
                         showConfirmButton: false,
                         timer: 1500,
-                        timerProgressBar: true
+                        timerProgressBar: true,
+                        background: '#fff',
+                        color: '#1e293b'
                     });
                     
-                    Toast.fire({
-                        icon: 'success',
-                        title: 'Login Berhasil'
-                    }).then(() => {
-                        // 3. PENGARAHAN HALAMAN (Routing)
+                    Toast.fire({ icon: 'success', title: 'Login Berhasil' }).then(() => {
+                        // 3. Routing
                         if (role === 'ROLE_USER') {
-                            window.location.href = '/shop'; // User biasa ke Toko
+                            window.location.href = '/shop';
                         } else {
-                            window.location.href = '/dashboard'; // Admin/Staff ke Dashboard
+                            window.location.href = '/dashboard';
                         }
                     });
                 } else {
@@ -169,14 +178,13 @@
                 }
             })
             .catch(err => {
-                Swal.fire({
+                swalCustom.fire({
                     icon: 'error',
-                    title: 'Gagal Masuk',
-                    text: err.message,
-                    confirmButtonColor: '#0ea5e9'
+                    title: 'Akses Ditolak',
+                    text: err.message
                 });
-                // Reset Tombol
-                btn.innerHTML = originalText;
+                // Reset Button
+                btn.innerHTML = originalContent;
                 btn.disabled = false;
                 btn.classList.remove('opacity-75', 'cursor-not-allowed');
             });

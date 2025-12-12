@@ -11,9 +11,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 public class DataInitializer {
 
-    // KITA HAPUS definisi Bean PasswordEncoder di sini.
-    // Spring Boot cukup mengambilnya dari SecurityConfig secara otomatis (Dependency Injection).
-
     @Bean
     CommandLineRunner initDatabase(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         return args -> {
@@ -21,12 +18,12 @@ public class DataInitializer {
             if (userRepository.count() == 0) {
                 System.out.println("... Database kosong. Membuat Default Admin ...");
 
-                // PERBAIKAN: Menggunakan Constructor (Karena tidak pakai Lombok @Builder)
+                
                 User admin = new User(
-                        "admin",                                // username
-                        passwordEncoder.encode("admin123"),     // password (hashed)
-                        "Super Administrator",                  // fullName
-                        UserRole.ADMIN                          // role
+                        "admin",                                
+                        passwordEncoder.encode("admin123"),     
+                        "Super Administrator",        
+                        UserRole.ADMIN                         
                 );
 
                 userRepository.save(admin);

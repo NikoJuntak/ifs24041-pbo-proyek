@@ -4,69 +4,130 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daftar Akun - MiniShop</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { primary: { 500: '#4F46E5', 600: '#4338ca' } }, // Warna Indigo untuk User
-                    fontFamily: { 'inter': ['Inter', 'sans-serif'] }
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    // Menggunakan palet warna yang sama dengan Admin Dashboard
+                    colors: {
+                        primary: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1' }
+                    }
                 }
             }
         }
     </script>
+    
+    <style>
+        /* Background Gradient Konsisten */
+        body { background: linear-gradient(to bottom right, #f8fafc, #e2e8f0); }
+        
+        /* Efek Kaca (Glassmorphism) */
+        .glass { 
+            background: rgba(255, 255, 255, 0.75); 
+            backdrop-filter: blur(20px); 
+            border: 1px solid rgba(255, 255, 255, 0.6); 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); 
+        }
+        
+        /* Animasi Ikon Input */
+        input:focus ~ i { color: #0ea5e9; transform: scale(1.1); }
+        i { transition: all 0.3s ease; }
+    </style>
 </head>
-<body class="font-inter bg-gray-50 h-screen flex items-center justify-center">
+<body class="min-h-screen flex items-center justify-center p-4 relative overflow-hidden font-sans text-slate-800">
 
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl overflow-hidden m-4">
-        <div class="p-8">
-            <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary-100 mb-4">
-                    <i class="fas fa-shopping-bag text-primary-600 text-xl"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-gray-800">Buat Akun Pelanggan</h2>
-                <p class="text-gray-500 text-sm mt-1">Mulai belanja kebutuhan Anda hari ini.</p>
+    <!-- Dekorasi Background (Sama dengan halaman Admin) -->
+    <div class="absolute top-0 left-0 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
+    <div class="absolute bottom-0 right-0 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+
+    <div class="glass w-full max-w-md rounded-3xl p-8 md:p-10 relative z-10 animate-fade-in-up">
+        
+        <!-- Header Section -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-sky-400 to-primary-600 text-white shadow-lg mb-4 transform rotate-3 hover:rotate-6 transition-all duration-300">
+                <i class="fas fa-shopping-bag text-2xl"></i>
             </div>
+            <h2 class="text-2xl font-extrabold text-slate-800 tracking-tight">Buat Akun Baru</h2>
+            <p class="text-slate-500 text-sm mt-2 font-medium">Bergabung dan mulai belanja hari ini.</p>
+        </div>
 
-            <form id="registerForm" class="space-y-5">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
+        <!-- Register Form -->
+        <form id="registerForm" class="space-y-5">
+            
+            <!-- Nama Lengkap -->
+            <div class="space-y-1">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Nama Lengkap</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fas fa-user text-slate-400 group-focus-within:text-primary-500"></i>
+                    </div>
                     <input type="text" id="fullName" required placeholder="Nama Anda"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition">
+                           class="block w-full pl-11 pr-4 py-3 bg-white/60 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all shadow-sm hover:bg-white">
                 </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                    <input type="text" id="username" required placeholder="Username unik"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition">
-                </div>
-
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
-                    <input type="password" id="password" required placeholder="Minimal 6 karakter"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition">
-                </div>
-
-                <!-- ROLE TIDAK DITAMPILKAN DI SINI (Hidden Logic) -->
-
-                <button type="submit" id="btnRegister"
-                        class="w-full bg-primary-600 hover:bg-primary-500 text-white font-bold py-3 rounded-lg shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5">
-                    Daftar Sekarang
-                </button>
-            </form>
-
-            <div class="mt-6 text-center text-sm text-gray-600">
-                Sudah punya akun? 
-                <a href="/auth/login" class="text-primary-600 hover:text-primary-500 font-bold">Masuk di sini</a>
             </div>
+
+            <!-- Username -->
+            <div class="space-y-1">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Username</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fas fa-id-card text-slate-400 group-focus-within:text-primary-500"></i>
+                    </div>
+                    <input type="text" id="username" required placeholder="Username unik"
+                           class="block w-full pl-11 pr-4 py-3 bg-white/60 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all shadow-sm hover:bg-white">
+                </div>
+            </div>
+
+            <!-- Password -->
+            <div class="space-y-1">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Password</label>
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fas fa-lock text-slate-400 group-focus-within:text-primary-500"></i>
+                    </div>
+                    <input type="password" id="password" required placeholder="Minimal 6 karakter"
+                           class="block w-full pl-11 pr-4 py-3 bg-white/60 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all shadow-sm hover:bg-white">
+                </div>
+            </div>
+
+            <!-- Hidden Role Logic is handled in JS -->
+
+            <!-- Submit Button -->
+            <button type="submit" id="btnRegister"
+                    class="w-full py-3.5 bg-gradient-to-r from-primary-600 to-sky-500 hover:from-primary-700 hover:to-sky-600 text-white rounded-xl font-bold shadow-lg hover:shadow-primary-500/30 transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2 mt-6">
+                <span>Daftar Sekarang</span>
+                <i class="fas fa-arrow-right text-sm"></i>
+            </button>
+        </form>
+
+        <!-- Login Link -->
+        <div class="mt-8 text-center text-sm font-medium text-slate-500">
+            Sudah punya akun? 
+            <a href="/auth/login" class="text-primary-600 hover:text-primary-700 font-bold hover:underline transition-all">Masuk di sini</a>
         </div>
     </div>
 
     <!-- Script Logic -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        // Konfigurasi SweetAlert agar sesuai tema
+        const swalCustom = Swal.mixin({
+            customClass: {
+                popup: 'rounded-3xl shadow-xl font-sans',
+                confirmButton: 'bg-primary-600 text-white font-bold py-2 px-4 rounded-xl hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2'
+            },
+            buttonsStyling: false
+        });
+
         document.getElementById('registerForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
@@ -74,17 +135,19 @@
             const username = document.getElementById('username').value;
             const password = document.getElementById('password').value;
             const btn = document.getElementById('btnRegister');
-            const originalText = btn.innerHTML;
+            const originalContent = btn.innerHTML;
 
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...';
+            // Loading state
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> <span class="ml-2">Memproses...</span>';
             btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-not-allowed');
 
             // Payload JSON
             const data = {
                 fullName: fullName,
                 username: username,
                 password: password,
-                role: 'USER' // <--- HARDCODE ROLE USER DI SINI
+                role: 'USER' // <--- HARDCODE ROLE USER
             };
 
             fetch('/api/auth/register', {
@@ -95,12 +158,11 @@
             .then(response => response.json())
             .then(res => {
                 if (res.status === 201) {
-                    Swal.fire({
+                    swalCustom.fire({
                         icon: 'success',
                         title: 'Berhasil Mendaftar!',
-                        text: 'Silakan login untuk mulai belanja.',
-                        confirmButtonText: 'Ke Halaman Login',
-                        confirmButtonColor: '#4F46E5'
+                        text: 'Akun Anda telah dibuat. Silakan login untuk mulai belanja.',
+                        confirmButtonText: 'Ke Halaman Login'
                     }).then(() => {
                         window.location.href = '/auth/login';
                     });
@@ -109,9 +171,15 @@
                 }
             })
             .catch(err => {
-                Swal.fire({ icon: 'error', title: 'Gagal', text: err.message });
-                btn.innerHTML = originalText;
+                swalCustom.fire({ 
+                    icon: 'error', 
+                    title: 'Gagal', 
+                    text: err.message 
+                });
+                // Reset button
+                btn.innerHTML = originalContent;
                 btn.disabled = false;
+                btn.classList.remove('opacity-75', 'cursor-not-allowed');
             });
         });
     </script>

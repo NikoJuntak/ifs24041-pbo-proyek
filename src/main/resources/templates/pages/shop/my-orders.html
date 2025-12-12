@@ -1,83 +1,279 @@
 <!DOCTYPE html>
 <html lang="id" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Pesanan Saya</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesanan Saya - Mini E-Com</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
-</head>
-<body class="bg-gray-50 text-slate-800">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <nav class="bg-white shadow-sm sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            <a href="/shop" class="text-2xl font-bold text-indigo-600">MiniShop</a>
-            
-            <div class="flex items-center gap-4">
-                <a href="/shop" class="text-gray-600 hover:text-indigo-600 font-medium">Lanjut Belanja</a>
-                <button onclick="logout()" class="text-red-500 hover:text-red-700 font-medium">Logout</button>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: { 50: '#f0f9ff', 100: '#e0f2fe', 500: '#0ea5e9', 600: '#0284c7', 700: '#0369a1' },
+                        dark: { 700: '#1e293b', 800: '#1a2332', 900: '#0f172a' }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { 
+            background: linear-gradient(to bottom right, #f8fafc, #e2e8f0); 
+            background-attachment: fixed;
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        }
+
+        .order-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .order-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        .item-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen">
+
+    <!-- Background Blobs -->
+    <div class="fixed top-0 left-0 w-full h-full overflow-hidden -z-10 pointer-events-none">
+        <div class="absolute top-0 left-0 w-[600px] h-[600px] bg-primary-500/10 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2"></div>
+        <div class="absolute bottom-0 right-0 w-[600px] h-[600px] bg-sky-500/10 rounded-full blur-[100px] translate-x-1/3 translate-y-1/3"></div>
+    </div>
+
+    <!-- NAVBAR -->
+    <nav class="glass sticky top-4 z-40 mx-4 mt-4 rounded-2xl">
+        <div class="max-w-7xl mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <!-- Logo -->
+                <a href="/shop" class="flex items-center gap-3 group">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-500 to-primary-600 flex items-center justify-center shadow-lg text-white transform group-hover:rotate-12 transition-transform duration-300">
+                        <i class="fas fa-crown text-lg"></i>
+                    </div>
+                    <div>
+                        <span class="font-extrabold text-xl tracking-tight text-slate-800 group-hover:text-primary-600 transition-colors">Mini E-Com</span>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Official Store</p>
+                    </div>
+                </a>
+
+                <!-- Right Actions -->
+                <div class="flex items-center gap-3">
+                    <!-- Continue Shopping -->
+                    <a href="/shop" class="hidden md:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-600 to-sky-500 text-white rounded-xl font-bold text-sm shadow-md hover:shadow-primary-500/30 hover:-translate-y-0.5 transition-all group">
+                        <i class="fas fa-arrow-left text-xs group-hover:-translate-x-1 transition-transform"></i>
+                        <span>Lanjut Belanja</span>
+                    </a>
+
+                    <!-- Mobile Icon -->
+                    <a href="/shop" class="md:hidden w-10 h-10 flex items-center justify-center bg-primary-50 text-primary-600 rounded-xl">
+                        <i class="fas fa-arrow-left"></i>
+                    </a>
+
+                    <div class="h-8 w-px bg-slate-200 mx-1"></div>
+                    
+                    <!-- Profile -->
+                    <div class="flex items-center gap-3 group">
+                        <div class="hidden lg:block text-right">
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Halo,</p>
+                            <p class="text-sm font-bold text-slate-800" th:text="${auth.fullName}">User Name</p>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-500 font-bold shadow-inner group-hover:bg-white transition-colors">
+                            <span th:text="${auth.fullName.substring(0,1).toUpperCase()}">U</span>
+                        </div>
+                        
+                        <button onclick="logout()" class="w-10 h-10 rounded-xl hover:bg-rose-50 text-slate-400 hover:text-rose-500 transition-colors flex items-center justify-center" title="Keluar">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
- 
 
-    <div class="max-w-4xl mx-auto px-4 py-8">
-        <h1 class="text-2xl font-bold mb-6">Riwayat Pesanan Saya</h1>
-
-        <div class="space-y-4">
-            <div th:each="order : ${orders}" class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                <div class="flex justify-between items-start mb-4 border-b border-gray-100 pb-4">
-                    <div>
-                        <span class="text-xs text-slate-400 uppercase font-bold">ID Order</span>
-                        <p class="font-mono text-indigo-600 font-bold" th:text="'#' + ${order.id}">#1001</p>
-                        <p class="text-xs text-slate-500 mt-1" th:text="${#temporals.format(order.orderDate, 'dd MMM yyyy, HH:mm')}"></p>
+    <!-- CONTENT -->
+    <main class="max-w-5xl mx-auto px-4 py-10 pb-20">
+        
+        <!-- Header Section -->
+        <div class="glass rounded-[2rem] p-8 md:p-10 mb-8 relative overflow-hidden">
+            <div class="absolute right-0 top-0 w-64 h-64 bg-gradient-to-br from-primary-500/10 to-transparent rounded-full -mr-10 -mt-10"></div>
+            
+            <div class="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                <div>
+                    <div class="flex items-center gap-4 mb-2">
+                        <div class="w-12 h-12 rounded-2xl bg-primary-50 text-primary-600 flex items-center justify-center shadow-sm">
+                            <i class="fas fa-receipt text-xl"></i>
+                        </div>
+                        <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">Riwayat Pesanan</h1>
                     </div>
+                    <p class="text-slate-500 font-medium ml-16">Pantau status pengiriman dan riwayat transaksi Anda.</p>
+                </div>
+                
+                <div class="flex items-center gap-3 bg-white/60 px-5 py-3 rounded-2xl border border-white/50 shadow-sm backdrop-blur-sm">
                     <div class="text-right">
-                        <span th:class="${
-                            order.status.name() == 'NEW' ? 'bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-bold' :
-                            order.status.name() == 'PROCESSING' ? 'bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold' :
-                            'bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold'
-                        }" th:text="${order.status}">STATUS</span>
-                        <p class="font-bold text-lg text-slate-800 mt-2" th:text="'Rp ' + ${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')}">Rp 0</p>
+                        <p class="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Transaksi</p>
+                        <p class="text-2xl font-extrabold text-slate-800 leading-none" th:text="${#lists.size(orders)}">0</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        <i class="fas fa-check-circle"></i>
                     </div>
                 </div>
-
-                <div class="space-y-2">
-                    <div th:each="item : ${order.items}" class="flex justify-between text-sm">
-                        <span class="text-slate-700">
-                            <span class="font-bold" th:text="${item.product.name}">Produk</span> 
-                            <span class="text-slate-400 ml-1" th:text="'x' + ${item.quantity}">x1</span>
-                        </span>
-                        <span class="font-medium text-slate-600" th:text="'Rp ' + ${#numbers.formatDecimal(item.subtotal, 0, 'COMMA', 0, 'POINT')}">Rp 0</span>
-                    </div>
-                </div>
-            </div>
-
-            <div th:if="${#lists.isEmpty(orders)}" class="text-center py-12 text-gray-400">
-                <i class="fas fa-receipt text-4xl mb-3"></i>
-                <p>Belum ada riwayat pesanan.</p>
-                <a href="/shop" class="text-indigo-600 font-bold text-sm mt-2 inline-block hover:underline">Mulai Belanja</a>
             </div>
         </div>
-    </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <!-- Orders List -->
+        <div class="space-y-6">
+            <!-- Order Card -->
+            <div th:each="order, iterStat : ${orders}" 
+                 class="order-card glass rounded-3xl overflow-hidden item-fade-in border border-white/50"
+                 th:style="'animation-delay: ' + ${iterStat.index * 0.1} + 's'">
+                
+                <!-- Card Header -->
+                <div class="bg-slate-50/80 backdrop-blur px-6 py-4 border-b border-slate-200/60 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <div class="w-10 h-10 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 shadow-sm">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-200 px-2 py-0.5 rounded">ID</span>
+                                <span class="font-mono font-bold text-slate-700 text-lg tracking-tight" th:text="'#' + ${order.id}">#1001</span>
+                            </div>
+                            <div class="flex items-center gap-2 text-xs text-slate-500 font-medium mt-0.5">
+                                <i class="far fa-clock"></i>
+                                <span th:text="${#temporals.format(order.orderDate, 'dd MMM yyyy, HH:mm')}">Date</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Badge -->
+                    <div>
+                        <span th:class="${
+                            order.status.name() == 'NEW' ? 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200 uppercase tracking-wide' :
+                            order.status.name() == 'PROCESSING' ? 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200 uppercase tracking-wide' :
+                            order.status.name() == 'SHIPPED' ? 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 uppercase tracking-wide' :
+                            'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase tracking-wide'
+                        }">
+                            <span class="w-2 h-2 rounded-full" 
+                                  th:classappend="${
+                                    order.status.name() == 'NEW' ? 'bg-amber-500 animate-pulse' :
+                                    order.status.name() == 'PROCESSING' ? 'bg-sky-500 animate-pulse' :
+                                    order.status.name() == 'SHIPPED' ? 'bg-purple-500' : 'bg-emerald-500'
+                                  }"></span>
+                            <span th:text="${order.status}">STATUS</span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Card Body (Items) -->
+                <div class="p-6 bg-white/40">
+                    <div class="space-y-3">
+                        <div th:each="item : ${order.items}" class="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100 shadow-sm hover:border-primary-100 transition group">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-lg bg-slate-50 flex items-center justify-center text-slate-300 border border-slate-100">
+                                    <i class="fas fa-image text-xl"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-slate-800 text-sm group-hover:text-primary-600 transition-colors" th:text="${item.product.name}">Product Name</h4>
+                                    <div class="flex items-center gap-2 mt-1">
+                                        <span class="text-xs font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded text-slate-600 border border-slate-200">
+                                            <span th:text="${item.quantity}">1</span> x
+                                        </span>
+                                        <span class="text-xs text-slate-400">@ Rp <span th:text="${#numbers.formatDecimal(item.product.price, 0, 'COMMA', 0, 'POINT')}">0</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-[10px] text-slate-400 font-bold uppercase mb-0.5">Subtotal</p>
+                                <p class="font-bold text-slate-700">Rp <span th:text="${#numbers.formatDecimal(item.subtotal, 0, 'COMMA', 0, 'POINT')}">0</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card Footer (Total) -->
+                <div class="bg-white/60 px-6 py-4 border-t border-slate-100 flex justify-between items-center">
+                    <div class="flex items-center gap-2 text-xs font-bold text-slate-500">
+                        <i class="fas fa-coins text-amber-500"></i> Total Pembayaran
+                    </div>
+                    <div class="text-xl font-extrabold text-primary-600">
+                        Rp <span th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'COMMA', 0, 'POINT')}">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Empty State -->
+            <div th:if="${#lists.isEmpty(orders)}" class="glass rounded-[2rem] p-16 text-center border-2 border-dashed border-slate-300/50">
+                <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+                    <i class="fas fa-shopping-basket text-4xl text-slate-300"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-slate-800 mb-2">Belum Ada Pesanan</h3>
+                <p class="text-slate-500 mb-8 max-w-md mx-auto">Sepertinya Anda belum pernah berbelanja. Yuk, mulai cari produk favoritmu sekarang!</p>
+                <a href="/shop" class="inline-flex items-center gap-2 px-8 py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold shadow-lg hover:shadow-slate-500/20 transition-all transform hover:-translate-y-1">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Mulai Belanja</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Footer Help -->
+        <div class="mt-12 text-center">
+            <p class="text-sm text-slate-400 font-medium flex items-center justify-center gap-2">
+                <i class="fas fa-shield-alt"></i> Transaksi Anda aman dan dilindungi.
+                <a href="#" class="text-primary-600 hover:text-primary-700 hover:underline">Butuh bantuan?</a>
+            </p>
+        </div>
+
+    </main>
+
     <script>
         function logout() {
             Swal.fire({
-                title: 'Keluar?',
-                icon: 'warning',
+                title: 'Ingin Keluar?',
+                text: "Sesi Anda akan berakhir.",
+                icon: 'question',
                 showCancelButton: true,
-                confirmButtonColor: '#d33',
-                confirmButtonText: 'Ya'
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'Ya, Keluar',
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+                customClass: { popup: 'rounded-3xl shadow-xl' }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    document.cookie = "AUTH_TOKEN=; path=/; max-age=0";
+                    document.cookie = "AUTH_TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                    localStorage.removeItem('token');
                     window.location.href = "/auth/logout";
                 }
             });
         }
     </script>
-
 </body>
 </html>
